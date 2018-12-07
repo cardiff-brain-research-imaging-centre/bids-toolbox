@@ -1,14 +1,14 @@
 {
 	"scans": {
-		"sub-01": {
-			"ses-01": "/folder/in/zfs/to/scan1",
-			"ses-02": "/folder/in/zfs/to/scan2",
-			"ses-03": "/folder/in/zfs/to/scan3"
+		"01": {
+			"01": "/home/osboxes/Data/Connectom_2subjects/sub-01/18_05_28-11_44_08-DST-1_3_12_2_1107_5_2_0_19950/scans",
+			"02": "/home/osboxes/Data/Connectom_2subjects/sub-01/18_05_30-11_27_00-DST-1_3_12_2_1107_5_2_0_19950/scans",
+			"03": "/home/osboxes/Data/Connectom_2subjects/sub-01/18_05_31-11_21_46-DST-1_3_12_2_1107_5_2_0_19950/scans"
 		},
-		"sub-02": {
-			"ses-01": "/folder/in/zfs/to/scan4",
-			"ses-02": "/folder/in/zfs/to/scan5",
-			"ses-03": "/folder/in/zfs/to/scan6"
+		"02": {
+			"01": "/home/osboxes/Data/Connectom_2subjects/sub-02/18_05_21-10_25_16-DST-1_3_12_2_1107_5_2_0_19950/scans",
+			"02": "/home/osboxes/Data/Connectom_2subjects/sub-02/18_05_22-08_33_26-DST-1_3_12_2_1107_5_2_0_19950/scans",
+			"03": "/home/osboxes/Data/Connectom_2subjects/sub-02/18_05_23-10_01_10-DST-1_3_12_2_1107_5_2_0_19950/scans"
 		}
 	},
 	"output": "/folder/in/zfs/to/store/creted/bids",
