@@ -1,0 +1,26 @@
+{
+	"scans": {
+		"sub-01": {
+			"ses-01": "/folder/in/zfs/to/scan1",
+			"ses-02": "/folder/in/zfs/to/scan2",
+			"ses-03": "/folder/in/zfs/to/scan3"
+		},
+		"sub-02": {
+			"ses-01": "/folder/in/zfs/to/scan4",
+			"ses-02": "/folder/in/zfs/to/scan5",
+			"ses-03": "/folder/in/zfs/to/scan6"
+		}
+	},
+	"output": "/folder/in/zfs/to/store/creted/bids",
+	"metadata": {
+		"item1": "To be added to dataset_description.json",
+		"item2": "To be added to dataset_description.json"
+	},
+	"pipeline": {
+		"run": "yes",
+		"config": {
+			"param1": 0.55,
+			"param2": 6.12
+		}
+	}
+}
