@@ -13,8 +13,21 @@
 	},
 	"output": "/folder/in/zfs/to/store/creted/bids",
 	"metadata": {
-		"item1": "To be added to dataset_description.json",
-		"item2": "To be added to dataset_description.json"
+		"modalities": [{
+				"tag": "CHARMED",
+				"type": "dwi",
+				"modality": "dwi"
+			},
+			{
+				"tag": "t1_mprage",
+				"type": "anat",
+				"modality": "T1w"
+			}
+		],
+		"datasetDescription": {
+			"item1": "To be added to dataset_description.json",
+			"item2": "To be added to dataset_description.json"
+		}
 	},
 	"pipeline": {
 		"run": "yes",
