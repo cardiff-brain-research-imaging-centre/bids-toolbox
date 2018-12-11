@@ -75,7 +75,7 @@ import numpy as np
 from glob import glob
 
 
-def bidskit(indir, oudir):
+def bidskit(indir, oudir, metadata):
     # Set first block of arguments
     dcm_root_dir = indir
     no_sessions = False
@@ -129,7 +129,7 @@ def bidskit(indir, oudir):
 
     # Initialize BIDS source directory contents
     if not first_pass:
-        bids_init(bids_src_dir, overwrite)
+        bids_init(bids_src_dir, metadata, overwrite)
 
     subject_dir_list = []
 
@@ -529,7 +529,7 @@ def bids_purpose_handling(bids_purpose, bids_intendedfor, seq_name,
         safe_copy(work_bvec_fname, bids_bvec_fname, overwrite)
 
 
-def bids_init(bids_src_dir, overwrite=False):
+def bids_init(bids_src_dir, metadata, overwrite=False):
     """
     Initialize BIDS source directory
 
@@ -546,6 +546,9 @@ def bids_init(bids_src_dir, overwrite=False):
                'License': "This data is made available under the Creative Commons BY-SA 4.0 International License.",
                'Name': "The dataset name goes here",
                'ReferencesAndLinks': ["References and links for this dataset go here"]})
+
+    for item in metadata['metadata']['datasetDescription']: 
+        meta_dict[item] = metadata['metadata']['datasetDescription'][item]
 
     # Write JSON file
     bids_write_json(datadesc_json, meta_dict, overwrite)

@@ -38,7 +38,7 @@ def postJsonHandler():
             copytree(data['scans'][sub][ses], parent_folder+'/dicom/'+sub+'/'+ses)
 
     ### Run bidskit 1st pass 
-    bidskit(parent_folder+'/dicom', parent_folder+'/output')
+    bidskit(parent_folder+'/dicom', parent_folder+'/output', data)
 
     ### Fill the bidskit configfile
     with open(parent_folder+'/derivatives/conversion/Protocol_Translator.json', 'r') as f:
@@ -54,14 +54,10 @@ def postJsonHandler():
         json.dump(bidskit_config, f)
 
     ## Run bidskit 2nd pass
-    bidskit(parent_folder+'/dicom', parent_folder+'/output')
+    bidskit(parent_folder+'/dicom', parent_folder+'/output', data)
 
     ## Add participants.json
     copyfile('participants.json',  parent_folder+'/output/participants.json')
-
-    ## Fill dataset_description with metadata info
-    # Also replace the "name" tag with the name
-    # Next to-do
 
     print('createBIDS finished')
 
