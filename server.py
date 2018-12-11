@@ -5,6 +5,8 @@ from shutil import copytree
 import os
 import time
 
+from dcm2bids import bidskit
+
 app = Flask(__name__)
 
 @app.route('/createBids', methods = ['POST'])
@@ -33,10 +35,10 @@ def postJsonHandler():
         for ses in data['scans'][sub]:
             copytree(data['scans'][sub][ses], parent_folder+'/dicom/sub-'+sub+'/ses-'+ses)
 
-    ### Run bidskit 
+    ### Run bidskit 1st pass 
+    bidskit(parent_folder+'/dicom', parent_folder+'/output')
 
-
-
+    ##FIX THE CONFIG YAML
 
 
     return 'CreateBIDS finished'
