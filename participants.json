@@ -1,0 +1,16 @@
+{
+    "age": {
+        "Description": "age of the participant",
+        "Units": "years"
+    },
+    "group": {
+        "Description": "group the participant belonged to in the experimental paradigm"
+    },
+    "sex": {
+        "Description": "sex of the participant",
+        "Levels": {
+            "m": "male",
+            "f": "female"
+        }
+    }
+}

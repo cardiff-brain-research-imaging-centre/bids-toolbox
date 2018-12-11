@@ -2,6 +2,7 @@ from flask import Flask
 from flask import request
 
 from shutil import copytree
+from shutil import copyfile
 import os
 import json
 import time
@@ -55,7 +56,11 @@ def postJsonHandler():
     ## Run bidskit 2nd pass
     bidskit(parent_folder+'/dicom', parent_folder+'/output')
 
+    ## Add participants.json
+    copyfile('participants.json',  parent_folder+'/output/participants.json')
+
     ## Fill dataset_description with metadata info
+    # Also replace the "name" tag with the name
     # Next to-do
 
     print('createBIDS finished')
