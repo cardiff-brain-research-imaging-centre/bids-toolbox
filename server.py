@@ -3,6 +3,7 @@ from flask import request
 
 from shutil import copytree
 import os
+import json
 import time
 
 from dcm2bids import bidskit
@@ -31,15 +32,33 @@ def postJsonHandler():
     os.mkdir(parent_folder+'/dicom')
 
     for sub in data['scans']:
-        os.mkdir(parent_folder+'/dicom/sub-'+sub)
+        os.mkdir(parent_folder+'/dicom/'+sub)
         for ses in data['scans'][sub]:
-            copytree(data['scans'][sub][ses], parent_folder+'/dicom/sub-'+sub+'/ses-'+ses)
+            copytree(data['scans'][sub][ses], parent_folder+'/dicom/'+sub+'/'+ses)
 
     ### Run bidskit 1st pass 
     bidskit(parent_folder+'/dicom', parent_folder+'/output')
 
-    ##FIX THE CONFIG YAML
+    ### Fill the bidskit configfile
+    with open(parent_folder+'/derivatives/conversion/Protocol_Translator.json', 'r') as f:
+        bidskit_config = json.load(f)
 
+    for key in bidskit_config:
+        for mod in data['metadata']['modalities']:
+            if mod['tag'] in key:
+                bidskit_config[key][0] = mod['type']
+                bidskit_config[key][1] = mod['modality']
+  
+    with open(parent_folder+'/derivatives/conversion/Protocol_Translator.json', "w") as f:
+        json.dump(bidskit_config, f)
+
+    ## Run bidskit 2nd pass
+    bidskit(parent_folder+'/dicom', parent_folder+'/output')
+
+    ## Fill dataset_description with metadata info
+    # Next to-do
+
+    print('createBIDS finished')
 
     return 'CreateBIDS finished'
 

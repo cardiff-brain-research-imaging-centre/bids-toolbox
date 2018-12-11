@@ -221,9 +221,6 @@ def bidskit(indir, oudir):
         for bids_subj_dir in subject_dir_list:
             bids_prune_intendedfors(bids_subj_dir, True)
 
-    # Clean exit
-    sys.exit(0)
-
 
 def bids_prune_intendedfors(bids_subj_dir, fmap_only):
     """
