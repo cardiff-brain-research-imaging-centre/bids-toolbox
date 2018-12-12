@@ -12,7 +12,7 @@ from dcm2bids import bidskit
 app = Flask(__name__)
 
 @app.route('/createBids', methods = ['POST'])
-def postJsonHandler():
+def createBidsHandler():
 
     if request.is_json == False:
         raise RuntimeError("Incorrect body message -- not a JSON file")
@@ -59,9 +59,29 @@ def postJsonHandler():
     ## Add participants.json
     copyfile('participants.json',  parent_folder+'/output/participants.json')
 
+    ## Copy local BIDS folder to ZFS
+    # To-Do, read destination folder from config JSON
+
+    ## Call the processing pipeline
+    # To-Do, connect with SlurmD/pySlurm
+
     print('createBIDS finished')
 
     return 'CreateBIDS finished'
+
+@app.route('/updateBids', methods = ['POST'])
+def updateBidsHandler():
+
+    if request.is_json == False:
+        raise RuntimeError("Incorrect body message -- not a JSON file")
+
+    data = request.get_json()
+    
+    ##Copy from ZFS to local storage
+
+
+
+    return 'UpdateBIDS finished'
 
 if __name__ == '__main__':
     app.run(port=5000, host='0.0.0.0', debug=True)
