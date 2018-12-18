@@ -16,6 +16,48 @@ Clone repository and run from parent directory: `python server.py`
 
 ### API
 
-The following methods are provided:
+The following POST methods are provided:
 
-createBids(): create a BIDS dataset from  a set of DICOM images.
+createBids(): create a BIDS dataset from a set of DICOM images.
+updateBids(): appends new scans to an existing BIDS dataset created by createBids().
+
+These two methods receive arguments in JSON format:
+
+`
+{
+	"scans": {
+		"01": {
+			"01": "/path to DICOM files for subject 01, scan 01"
+		},
+		"02": {
+			"01": "/path to DICOM files for subject 02, scan 01",
+			"02": "/path to DICOM files for subject 02, scan 02"
+		}
+		}
+	},
+	"output": "/ path to BIDS dataset in permanent storage",
+	"metadata": {
+		"modalities": [{
+				"tag": "CHARMED",
+				"type": "dwi",
+				"modality": "dwi"
+			},
+			{
+				"tag": "t1_mprage",
+				"type": "anat",
+				"modality": "T1w"
+			}
+		],
+		"datasetDescription": {
+			"item": "Item to be added to dataset_description.json"
+		}
+	},
+	"pipeline": {
+		"run": "yes",
+		"config": {
+			"param1": 0.55,
+			"param2": 6.12
+		}
+	}
+}
+`
