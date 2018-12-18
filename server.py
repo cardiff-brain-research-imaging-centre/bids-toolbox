@@ -35,7 +35,10 @@ def createBidsHandler():
     for sub in data['scans']:
         os.mkdir(parent_folder+'/dicom/'+sub)
         for ses in data['scans'][sub]:
-            copytree(data['scans'][sub][ses], parent_folder+'/dicom/'+sub+'/'+ses)
+            try:
+                copytree(data['scans'][sub][ses], parent_folder+'/dicom/'+sub+'/'+ses)
+            except:
+                print("ERROR: Error trying to copy subject "+sub+" scan "+ses+" data in folder "+parent_folder+'/dicom/'+sub+'/'+ses)
 
     ### Run bidskit 1st pass 
     bidskit(parent_folder+'/dicom', parent_folder+'/output', data)
@@ -93,11 +96,17 @@ def updateBidsHandler():
         if sub in dataset_props['scans']:
             for scan in data['scans'][sub]:
                 if scan not in dataset_props['scans'][sub]:
-                    copytree(data['scans'][sub][scan], parent_folder+'/dicom/'+sub+'/'+scan)
+                    try:
+                        copytree(data['scans'][sub][scan], parent_folder+'/dicom/'+sub+'/'+scan)
+                    except:
+                        print("ERROR: Error trying to copy subject "+sub+" scan "+scan+" data in folder "+parent_folder+'/dicom/'+sub+'/'+scan)
         else:
             os.mkdir(parent_folder+'/dicom/'+sub)
             for scan in data['scans'][sub]:
-                copytree(data['scans'][sub][scan], parent_folder+'/dicom/'+sub+'/'+scan)
+                try:
+                    copytree(data['scans'][sub][scan], parent_folder+'/dicom/'+sub+'/'+scan)
+                except:
+                    print("ERROR: Error trying to copy subject "+sub+" scan "+scan+" data in folder "+parent_folder+'/dicom/'+sub+'/'+scan)
 
     ## Run bidskit 2nd pass
     bidskit(parent_folder+'/dicom', parent_folder+'/output', data)
