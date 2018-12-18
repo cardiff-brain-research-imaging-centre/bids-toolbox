@@ -59,6 +59,10 @@ def createBidsHandler():
     ## Add participants.json
     copyfile('participants.json',  parent_folder+'/output/participants.json')
 
+    ## Store metadata for BIDS toolbox in hidden file
+    with open(parent_folder+'/.dataset.toolbox', "w") as f:
+        json.dump(data, f)
+
     ## Copy local BIDS folder to ZFS
     # To-Do, read destination folder from config JSON
 
@@ -76,10 +80,41 @@ def updateBidsHandler():
         raise RuntimeError("Incorrect body message -- not a JSON file")
 
     data = request.get_json()
-    
-    ##Copy from ZFS to local storage
 
+    parent_folder = data['output']
 
+    # To-Do, load from ZFS
+
+    with open(parent_folder+'/.dataset.toolbox', 'r') as f:
+        dataset_props = json.load(f)
+
+    ## Add DICOM files for new subjects/scans to /dicom
+    for sub in data['scans']:
+        if sub in dataset_props['scans']:
+            for scan in data['scans'][sub]:
+                if scan not in dataset_props['scans'][sub]:
+                    copytree(data['scans'][sub][scan], parent_folder+'/dicom/'+sub+'/'+scan)
+        else:
+            os.mkdir(parent_folder+'/dicom/'+sub)
+            for scan in data['scans'][sub]:
+                copytree(data['scans'][sub][scan], parent_folder+'/dicom/'+sub+'/'+scan)
+
+    ## Run bidskit 2nd pass
+    bidskit(parent_folder+'/dicom', parent_folder+'/output', data)
+
+    # To-Do: check if dataset_description is updated, if not, update it here
+
+    ## Store metadata for BIDS toolbox in hidden file
+    with open(parent_folder+'/.dataset.toolbox', "w") as f:
+        json.dump(data, f)
+
+    ## Copy local BIDS folder to ZFS
+    # To-Do, read destination folder from config JSON
+
+    ## Call the processing pipeline
+    # To-Do, connect with SlurmD/pySlurm
+
+    print('updateBIDS finished')
 
     return 'UpdateBIDS finished'
 
