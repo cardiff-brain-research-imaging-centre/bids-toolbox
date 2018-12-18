@@ -18,12 +18,12 @@ Clone repository and run from parent directory: `python server.py`
 
 The following POST methods are provided:
 
-createBids(): create a BIDS dataset from a set of DICOM images.
-updateBids(): appends new scans to an existing BIDS dataset created by createBids().
++ createBids(): create a BIDS dataset from a set of DICOM images.
++ updateBids(): appends new scans to an existing BIDS dataset created by createBids().
 
 These two methods receive arguments in JSON format:
 
-`
+``` js
 {
 	"scans": {
 		"01": {
@@ -60,4 +60,4 @@ These two methods receive arguments in JSON format:
 		}
 	}
 }
-`
+```
