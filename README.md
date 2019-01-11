@@ -4,7 +4,7 @@ This repository hold the code for The BIDS Toolbox, a web service for the creati
 
 ### Software pre-requisites
 
-Flask: can be installed using pip as: `pip install flask flask-restful`
+Flask: can be installed using pip as: `pip install flask flask-restful pydicom numpy`
 
 Dcm2Niix: install latest version from official repository https://github.com/rordenlab/dcm2niix
 
