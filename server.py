@@ -3,6 +3,8 @@ from flask import request
 
 from shutil import copytree
 from shutil import copyfile
+from shutil import rmtree
+from distutils.dir_util import copy_tree
 import os
 import json
 import time
@@ -19,9 +21,7 @@ def createBidsHandler():
 
     data = request.get_json()
     
-    ### Create DICOM folder structure
-
-    # Create temporary folder to arrange DICOM files
+    ## Create temporary working folder 
     parent_folder = '/tmp/bids_temp_'+str(time.time())
 
     try:
@@ -29,7 +29,7 @@ def createBidsHandler():
     except FileExistsError:
         print("Directory ",parent_folder, " already exists")
 
-    # Create and populate DICOM subfolder
+    ## Create and populate DICOM subfolder
     os.mkdir(parent_folder+'/dicom')
 
     for sub in data['scans']:
@@ -40,10 +40,10 @@ def createBidsHandler():
             except:
                 print("ERROR: Error trying to copy subject "+sub+" scan "+ses+" data in folder "+parent_folder+'/dicom/'+sub+'/'+ses)
 
-    ### Run bidskit 1st pass 
+    ## Run bidskit 1st pass 
     bidskit(parent_folder+'/dicom', parent_folder+'/output', data)
 
-    ### Fill the bidskit configfile
+    ## Fill the bidskit configfile
     with open(parent_folder+'/derivatives/conversion/Protocol_Translator.json', 'r') as f:
         bidskit_config = json.load(f)
 
@@ -63,11 +63,17 @@ def createBidsHandler():
     copyfile('participants.json',  parent_folder+'/output/participants.json')
 
     ## Store metadata for BIDS toolbox in hidden file
-    with open(parent_folder+'/.dataset.toolbox', "w") as f:
+    with open(parent_folder+'/output/.dataset.toolbox', "w") as f:
         json.dump(data, f)
 
-    ## Copy local BIDS folder to ZFS
-    # To-Do, read destination folder from config JSON
+    ## Add hidden ProtocolTranslator as hidden file to dataset 
+    copyfile(parent_folder+'/derivatives/conversion/Protocol_Translator.json', parent_folder+'/output/.Protocol_Translator.json')
+
+    ## Copy local BIDS folder to output directory
+    copy_tree(parent_folder+'/output', data['output'])
+
+    ## Remove temporary working directory
+    rmtree(parent_folder)
 
     ## Call the processing pipeline
     # To-Do, connect with SlurmD/pySlurm
@@ -84,11 +90,26 @@ def updateBidsHandler():
 
     data = request.get_json()
 
-    parent_folder = data['output']
+    ## Create temporary working folder 
+    parent_folder = '/tmp/bids_temp_'+str(time.time())
+    try:
+        os.mkdir(parent_folder)
+    except FileExistsError:
+        print("Directory ",parent_folder, " already exists")
 
-    # To-Do, load from ZFS
+    ## Populate working folder
+    os.mkdir(parent_folder+'/output')
+    copy_tree(data['output'], parent_folder+'/output')
 
-    with open(parent_folder+'/.dataset.toolbox', 'r') as f:
+    os.mkdir(parent_folder+'/derivatives')
+    os.mkdir(parent_folder+'/derivatives/conversion')
+    copyfile(parent_folder+'/output/.Protocol_Translator.json', parent_folder+'/derivatives/conversion/Protocol_Translator.json')
+
+    os.mkdir(parent_folder+'/work')
+    os.mkdir(parent_folder+'/work/conversion')
+    os.mkdir(parent_folder+'/dicom')
+
+    with open(parent_folder+'/output/.dataset.toolbox', 'r') as f:
         dataset_props = json.load(f)
 
     ## Add DICOM files for new subjects/scans to /dicom
@@ -117,8 +138,11 @@ def updateBidsHandler():
     with open(parent_folder+'/.dataset.toolbox', "w") as f:
         json.dump(data, f)
 
-    ## Copy local BIDS folder to ZFS
-    # To-Do, read destination folder from config JSON
+    ## Copy local BIDS folder to output directory
+    copy_tree(parent_folder+'/output', data['output'])
+
+    # Remove temporary working directory
+    rmtree(parent_folder)
 
     ## Call the processing pipeline
     # To-Do, connect with SlurmD/pySlurm
