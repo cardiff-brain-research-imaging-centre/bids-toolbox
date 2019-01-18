@@ -74,8 +74,12 @@ import pydicom
 import numpy as np
 from glob import glob
 
+from timeit import default_timer as timer
 
 def bidskit(indir, oudir, metadata):
+
+    d2n_time = 0.0    
+    
     # Set first block of arguments
     dcm_root_dir = indir
     no_sessions = False
@@ -195,9 +199,13 @@ def bidskit(indir, oudir, metadata):
                 # Run dcm2niix conversion into working conversion directory
                 print('  Converting all DICOM images in %s' % dcm_dir)
                 devnull = open(os.devnull, 'w')
+                start_time = timer()
                 subprocess.call(['dcm2niix', '-b', 'y', '-z', 'y', '-f', '%n--%d--%q--%s',
                                  '-o', work_conv_dir, dcm_dir],
                                 stdout=devnull, stderr=subprocess.STDOUT)
+                end_time = timer()
+                print('DEBUG: dcm2niix time: '+str(end_time-start_time))
+                d2n_time += (end_time - start_time)
 
             if not first_pass:
 
@@ -220,6 +228,8 @@ def bidskit(indir, oudir, metadata):
         print( "Subject directories to prune:  " + ", ".join(subject_dir_list) )
         for bids_subj_dir in subject_dir_list:
             bids_prune_intendedfors(bids_subj_dir, True)
+
+    print('End of bidskit, dcm2niix time: '+str(round(d2n_time,3))+' seconds')
 
 
 def bids_prune_intendedfors(bids_subj_dir, fmap_only):

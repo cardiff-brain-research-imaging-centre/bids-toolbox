@@ -9,6 +9,8 @@ import os
 import json
 import time
 
+from timeit import default_timer as timer
+
 from dcm2bids import bidskit
 from scanModality import inferScanModality
 
@@ -16,6 +18,8 @@ app = Flask(__name__)
 
 @app.route('/createBids', methods = ['POST'])
 def createBidsHandler():
+
+    start_time = timer()
 
     if request.is_json == False:
         raise RuntimeError("Incorrect body message -- not a JSON file")
@@ -86,12 +90,16 @@ def createBidsHandler():
     ## Call the processing pipeline
     # To-Do, connect with SlurmD/pySlurm
 
-    print('createBIDS finished')
+    end_time = timer()
+
+    print('createBIDS finished, '+str(round(end_time - start_time,3))+' seconds')
 
     return 'CreateBIDS finished'
 
 @app.route('/updateBids', methods = ['POST'])
 def updateBidsHandler():
+
+    start_time = timer()
 
     if request.is_json == False:
         raise RuntimeError("Incorrect body message -- not a JSON file")
@@ -155,7 +163,9 @@ def updateBidsHandler():
     ## Call the processing pipeline
     # To-Do, connect with SlurmD/pySlurm
 
-    print('updateBIDS finished')
+    end_time = timer()
+
+    print('updateBIDS finished, '+str(round(end_time - start_time,3))+' seconds')
 
     return 'UpdateBIDS finished'
 
