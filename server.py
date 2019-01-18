@@ -10,6 +10,7 @@ import json
 import time
 
 from dcm2bids import bidskit
+from scanModality import inferScanModality
 
 app = Flask(__name__)
 
@@ -48,11 +49,18 @@ def createBidsHandler():
         bidskit_config = json.load(f)
 
     for key in bidskit_config:
+        found = False
         for mod in data['metadata']['modalities']:
             if mod['tag'] in key:
                 bidskit_config[key][0] = mod['type']
                 bidskit_config[key][1] = mod['modality']
-  
+                found = True
+
+        if(found == False):
+                scan_type = inferScanModality(key, parent_folder)
+                bidskit_config[key][0] = scan_type['type']
+                bidskit_config[key][1] = scan_type['modality']
+
     with open(parent_folder+'/derivatives/conversion/Protocol_Translator.json', "w") as f:
         json.dump(bidskit_config, f)
 
