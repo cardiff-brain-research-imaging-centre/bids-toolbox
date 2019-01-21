@@ -76,9 +76,16 @@ from glob import glob
 
 from timeit import default_timer as timer
 
-def bidskit(indir, oudir, metadata):
+verbose = False
 
-    d2n_time = 0.0    
+def bidskit(indir, oudir, metadata, config):
+    global verbose
+
+    d2n_time = 0.0
+    if config['verbose'] == 'True':
+        verbose = True
+    else:
+        verbose = False
     
     # Set first block of arguments
     dcm_root_dir = indir
@@ -99,17 +106,18 @@ def bidskit(indir, oudir, metadata):
     safe_mkdir(bids_src_dir)
     safe_mkdir(bids_deriv_dir)
 
-    print('')
-    print('------------------------------------------------------------')
-    print('DICOM to BIDS Converter')
-    print('------------------------------------------------------------')
-    print('Software Version           : %s' % __version__)
-    print('DICOM Root Directory       : %s' % dcm_root_dir)
-    print('BIDS Source Directory      : %s' % bids_src_dir)
-    print('BIDS Derivatives Directory : %s' % bids_deriv_dir)
-    print('Working Directory          : %s' % work_dir)
-    print('Use Session Directories    : %s' % ('No' if no_sessions else 'Yes') )
-    print('Overwrite Existing Files   : %s' % ('Yes' if overwrite else 'No') )
+    if verbose:
+        print('')
+        print('------------------------------------------------------------')
+        print('DICOM to BIDS Converter')
+        print('------------------------------------------------------------')
+        print('Software Version           : %s' % __version__)
+        print('DICOM Root Directory       : %s' % dcm_root_dir)
+        print('BIDS Source Directory      : %s' % bids_src_dir)
+        print('BIDS Derivatives Directory : %s' % bids_deriv_dir)
+        print('Working Directory          : %s' % work_dir)
+        print('Use Session Directories    : %s' % ('No' if no_sessions else 'Yes') )
+        print('Overwrite Existing Files   : %s' % ('Yes' if overwrite else 'No') )
 
     # Load protocol translation and exclusion info from derivatives/conversion directory
     # If no translator is present, prot_dict is an empty dictionary
@@ -119,16 +127,18 @@ def bidskit(indir, oudir, metadata):
     prot_dict = bids_load_prot_dict(prot_dict_json)
 
     if prot_dict and os.path.isdir(work_dir):
-        print('')
-        print('------------------------------------------------------------')
-        print('Pass 2 : Populating BIDS source directory')
-        print('------------------------------------------------------------')
+        if verbose:
+            print('')
+            print('------------------------------------------------------------')
+            print('Pass 2 : Populating BIDS source directory')
+            print('------------------------------------------------------------')
         first_pass = False
     else:
-        print('')
-        print('------------------------------------------------------------')
-        print('Pass 1 : DICOM to Nifti conversion and dictionary creation')
-        print('------------------------------------------------------------')
+        if verbose:
+            print('')
+            print('------------------------------------------------------------')
+            print('Pass 1 : DICOM to Nifti conversion and dictionary creation')
+            print('------------------------------------------------------------')
         first_pass = True
 
     # Initialize BIDS source directory contents
@@ -144,10 +154,11 @@ def bidskit(indir, oudir, metadata):
         SID = os.path.basename(dcm_sub_dir.strip('/'))
         subject_dir_list.append( bids_src_dir + "/sub-" + SID )
 
-        print('')
-        print('------------------------------------------------------------')
-        print('Processing subject ' + SID)
-        print('------------------------------------------------------------')
+        if verbose:
+            print('')
+            print('------------------------------------------------------------')
+            print('Processing subject ' + SID)
+            print('------------------------------------------------------------')
 
         # Handle subj vs subj/session directory lists
         if no_sessions:
@@ -169,7 +180,8 @@ def bidskit(indir, oudir, metadata):
             else:
                 SES = os.path.basename(dcm_dir.strip('/'))
                 ses_prefix = 'ses-' + SES
-                print('  Processing session ' + SES)
+                if verbose:
+                    print('  Processing session ' + SES)
 
             # Working conversion directories
             work_subj_dir = os.path.join(work_dir, sub_prefix)
@@ -179,12 +191,13 @@ def bidskit(indir, oudir, metadata):
             bids_src_subj_dir = os.path.join(bids_src_dir, sub_prefix)
             bids_src_ses_dir = os.path.join(bids_src_subj_dir, ses_prefix)
 
-            print('  BIDS working subject directory : %s' % work_subj_dir)
-            if not no_sessions:
-                print('  BIDS working session directory : %s' % work_conv_dir)
-            print('  BIDS source subject directory  : %s' % bids_src_subj_dir)
-            if not no_sessions:
-                print('  BIDS source session directory  : %s' % bids_src_ses_dir)
+            if verbose:
+                print('  BIDS working subject directory : %s' % work_subj_dir)
+                if not no_sessions:
+                    print('  BIDS working session directory : %s' % work_conv_dir)
+                print('  BIDS source subject directory  : %s' % bids_src_subj_dir)
+                if not no_sessions:
+                    print('  BIDS source session directory  : %s' % bids_src_ses_dir)
 
             # Safely create BIDS working directory
             # Flag for conversion if no working directory existed
@@ -197,14 +210,13 @@ def bidskit(indir, oudir, metadata):
             if first_pass or needs_converting:
 
                 # Run dcm2niix conversion into working conversion directory
-                print('  Converting all DICOM images in %s' % dcm_dir)
+                if verbose: print('  Converting all DICOM images in %s' % dcm_dir)
                 devnull = open(os.devnull, 'w')
                 start_time = timer()
                 subprocess.call(['dcm2niix', '-b', 'y', '-z', 'y', '-f', '%n--%d--%q--%s',
                                  '-o', work_conv_dir, dcm_dir],
                                 stdout=devnull, stderr=subprocess.STDOUT)
                 end_time = timer()
-                print('DEBUG: dcm2niix time: '+str(end_time-start_time))
                 d2n_time += (end_time - start_time)
 
             if not first_pass:
@@ -225,7 +237,7 @@ def bidskit(indir, oudir, metadata):
 
 
     if not skip_if_pruning:
-        print( "Subject directories to prune:  " + ", ".join(subject_dir_list) )
+        if verbose: print( "Subject directories to prune:  " + ", ".join(subject_dir_list) )
         for bids_subj_dir in subject_dir_list:
             bids_prune_intendedfors(bids_subj_dir, True)
 
@@ -315,7 +327,7 @@ def bids_run_conversion(conv_dir, first_pass, prot_dict, src_dir, SID, SES, clea
             # Check if we're creating new protocol dictionary
             if first_pass:
 
-                print('  Adding protocol %s to dictionary template' % info['SerDesc'])
+                if verbose: print('  Adding protocol %s to dictionary template' % info['SerDesc'])
 
                 # Add current protocol to protocol dictionary
                 # Use default EXCLUDE_* values which can be changed (or not) by the user
@@ -331,7 +343,7 @@ def bids_run_conversion(conv_dir, first_pass, prot_dict, src_dir, SID, SES, clea
 
                 # JSON sidecar for this image
                 if not os.path.isfile(src_json_fname):
-                    print('* JSON sidecar not found : %s' % src_json_fname)
+                    if verbose: print('* JSON sidecar not found : %s' % src_json_fname)
                     break
 
                 if info['SerDesc'] in prot_dict.keys():
@@ -339,11 +351,11 @@ def bids_run_conversion(conv_dir, first_pass, prot_dict, src_dir, SID, SES, clea
                     if prot_dict[info['SerDesc']][0].startswith('EXCLUDE'):
 
                         # Skip excluded protocols
-                        print('* Excluding protocol ' + str(info['SerDesc']))
+                        if verbose: print('* Excluding protocol ' + str(info['SerDesc']))
 
                     else:
 
-                        print('  Organizing ' + str(info['SerDesc']))
+                        if verbose: print('  Organizing ' + str(info['SerDesc']))
 
                         # Use protocol dictionary to determine purpose folder, BIDS filename suffix and fmap linking
                         bids_purpose, bids_suffix, bids_intendedfor = prot_dict[info['SerDesc']]
@@ -388,16 +400,16 @@ def bids_run_conversion(conv_dir, first_pass, prot_dict, src_dir, SID, SES, clea
                                               overwrite)
                 else:
                     # Skip protocols not in the dictionary
-                    print('* Protocol ' + str(info['SerDesc']) + ' is not in the dictionary, did not convert.')
+                    if verbose: print('* Protocol ' + str(info['SerDesc']) + ' is not in the dictionary, did not convert.')
 
         if not first_pass:
 
             # Optional working directory cleanup after Pass 2
             if do_cleanup:
-                print('  Cleaning up temporary files')
+                if verbose: print('  Cleaning up temporary files')
                 shutil.rmtree(conv_dir)
             else:
-                print('  Preserving conversion directory')
+                if verbose: print('  Preserving conversion directory')
 
 
 def bids_purpose_handling(bids_purpose, bids_intendedfor, seq_name,
@@ -430,7 +442,7 @@ def bids_purpose_handling(bids_purpose, bids_intendedfor, seq_name,
 
         if seq_name == 'EP':
 
-            print('    EPI detected')
+            if verbose: print('    EPI detected')
             bids_events_template(bids_nii_fname, overwrite)
 
             # Add taskname to BIDS JSON sidecar
@@ -449,11 +461,12 @@ def bids_purpose_handling(bids_purpose, bids_intendedfor, seq_name,
         # Check for MEGE vs SE-EPI fieldmap images
         # MEGE will have a 'GR' sequence, SE-EPI will have 'EP'
 
-        print('    Identifying fieldmap image type')
+        if verbose: print('    Identifying fieldmap image type')
         if seq_name == 'GR':
 
-            print('    GRE detected')
-            print('    Identifying magnitude and phase images')
+            if verbose:
+                print('    GRE detected')
+                print('    Identifying magnitude and phase images')
 
             # For Siemens dual gradient echo fieldmaps, three Nifti/JSON pairs are generated from two series
             # Requires dcm2nixx v1.0.20180404 or later for echo number suffix
@@ -467,7 +480,7 @@ def bids_purpose_handling(bids_purpose, bids_intendedfor, seq_name,
 
                     if 'P' in info['ImageType'][2]:
 
-                        print('    Interecho phase difference detected')
+                        if verbose: print('    Interecho phase difference detected')
 
                         # Read phase meta data
                         bids_nii_fname = bids_nii_fname.replace('.nii.gz', '_phasediff.nii.gz')
@@ -481,38 +494,35 @@ def bids_purpose_handling(bids_purpose, bids_intendedfor, seq_name,
                     else:
 
                         # Echo 2 magnitude - discard
-                        print('    Echo 2 magnitude detected - discarding')
+                        if verbose: print('    Echo 2 magnitude detected - discarding')
                         bids_nii_fname = []  # Discard image
                         bids_json_fname = []  # Discard sidecar
 
             else:
 
-                print('    Echo 1 magnitude detected')
+                if verbose: print('    Echo 1 magnitude detected')
                 bids_nii_fname = bids_nii_fname.replace('.nii.gz', '_magnitude.nii.gz')
                 bids_json_fname = []  # Discard sidecar only
 
         elif seq_name == 'EP':
 
-            print('    EPI detected')
+            if verbose: print('    EPI detected')
 
         else:
 
-            print('    Unrecognized fieldmap detected')
-            print('    Simply copying image and sidecar to fmap directory')
+            if verbose:
+                print('    Unrecognized fieldmap detected')
+                print('    Simply copying image and sidecar to fmap directory')
 
     elif bids_purpose == 'anat':
 
-        if seq_name == 'GR_IR':
-
-            print('    IR-prepared GRE detected - likely T1w MP-RAGE or equivalent')
-
-        elif seq_name == 'SE':
-
-            print('    Spin echo detected - likely T1w or T2w anatomic image')
-
-        elif seq_name == 'GR':
-
-            print('    Gradient echo detected')
+        if verbose:
+            if seq_name == 'GR_IR':
+                print('    IR-prepared GRE detected - likely T1w MP-RAGE or equivalent')
+            elif seq_name == 'SE':
+                print('    Spin echo detected - likely T1w or T2w anatomic image')
+            elif seq_name == 'GR':
+                print('    Gradient echo detected')
 
     elif bids_purpose == 'dwi':
 
@@ -524,7 +534,7 @@ def bids_purpose_handling(bids_purpose, bids_intendedfor, seq_name,
         bids_bvec_fname = str(bids_json_fname.replace('dwi.json', 'dwi.bvec'))
 
     # Populate BIDS source directory with Nifti images, JSON and DWI sidecars
-    print('  Populating BIDS source directory')
+    if verbose: print('  Populating BIDS source directory')
 
     if bids_nii_fname:
         safe_copy(work_nii_fname, str(bids_nii_fname), overwrite)
@@ -635,11 +645,7 @@ def bids_dcm_info(dcm_dir):
             dcm_info['Age'] = 0
 
     else:
-
-        print('* No DICOM header information found in %s' % dcm_dir)
-        print('* Confirm that DICOM images in this folder are uncompressed')
-        print('* Exiting')
-        sys.exit(1)
+        raise RuntimeError('bidskit Error -- No DICOM header information found in dicom directory ')
 
     return dcm_info
 
@@ -722,7 +728,7 @@ def bids_add_run_number(bids_suffix, run_no):
     if "run-" in bids_suffix:
 
         # Preserve existing run-* value in suffix
-        print('  * BIDS suffix already contains run number - skipping')
+        if verbose: print('  * BIDS suffix already contains run number - skipping')
         new_bids_suffix = bids_suffix
 
     else:
@@ -756,13 +762,13 @@ def bids_events_template(bold_fname, overwrite=False):
 
         if os.path.isfile(events_fname):
             if overwrite:
-                print('  Overwriting previous %s' % events_bname)
+                if verbose: print('  Overwriting previous %s' % events_bname)
                 create_file = True
             else:
-                print('  Preserving previous %s' % events_bname)
+                if verbose: print('  Preserving previous %s' % events_bname)
                 create_file = False
         else:
-            print('  Creating %s' % events_fname)
+            if verbose: print('  Creating %s' % events_fname)
             create_file = True
 
         if create_file:
@@ -847,11 +853,10 @@ def bids_fmap_echotimes(src_phase_json_fname):
             TE1 = mag1_dict['EchoTime']
             TE2 = phase_dict['EchoTime']
         else:
-            print('*** Could not determine echo times multiecho fieldmap - using 0.0 ')
+            if verbose: print('*** Could not determine echo times multiecho fieldmap - using 0.0 ')
 
     else:
-
-        print('* Fieldmap phase difference sidecar not found : ' + src_phase_json_fname)
+        if verbose: print('* Fieldmap phase difference sidecar not found : ' + src_phase_json_fname)
 
     return TE1, TE2
 
@@ -867,9 +872,9 @@ def bids_create_prot_dict(prot_dict_json, prot_dict):
     """
 
     if os.path.isfile(prot_dict_json):
-
-        print('* Protocol dictionary already exists : ' + prot_dict_json)
-        print('* Skipping creation of new dictionary')
+        if verbose:
+            print('* Protocol dictionary already exists : ' + prot_dict_json)
+            print('* Skipping creation of new dictionary')
 
     else:
 
@@ -877,13 +882,14 @@ def bids_create_prot_dict(prot_dict_json, prot_dict):
         json.dump(prot_dict, json_fd, indent=4, separators=(',', ':'))
         json_fd.close()
 
-        print('')
-        print('---')
-        print('New protocol dictionary created : %s' % prot_dict_json)
-        print('Remember to replace "EXCLUDE" values in dictionary with an appropriate image description')
-        print('For example "MP-RAGE T1w 3D structural" or "MB-EPI BOLD resting-state')
-        print('---')
-        print('')
+        if verbose:
+            print('')
+            print('---')
+            print('New protocol dictionary created : %s' % prot_dict_json)
+            print('Remember to replace "EXCLUDE" values in dictionary with an appropriate image description')
+            print('For example "MP-RAGE T1w 3D structural" or "MB-EPI BOLD resting-state')
+            print('---')
+            print('')
 
     return
 
@@ -901,7 +907,7 @@ def bids_read_json(fname):
         json_dict = json.load(fd)
         fd.close()
     except:
-        print('*** JSON sidecar not found - returning empty dictionary')
+        if verbose: print('*** JSON sidecar not found - returning empty dictionary')
         json_dict = dict()
 
     return json_dict
@@ -923,13 +929,13 @@ def bids_write_json(fname, meta_dict, overwrite=False):
 
     if os.path.isfile(fname):
         if overwrite:
-            print('    Overwriting previous %s' % bname)
+            if verbose: print('    Overwriting previous %s' % bname)
             create_file = True
         else:
-            print('    Preserving previous %s' % bname)
+            if verbose: print('    Preserving previous %s' % bname)
             create_file = False
     else:
-        print('    Creating new %s' % bname)
+        if verbose: print('    Creating new %s' % bname)
         create_file = True
 
     if create_file:
@@ -1015,13 +1021,13 @@ def safe_copy(fname1, fname2, overwrite=False):
 
     if os.path.isfile(fname2):
         if overwrite:
-            print('    Copying %s to %s (overwrite)' % (bname1, bname2))
+            if verbose: print('    Copying %s to %s (overwrite)' % (bname1, bname2))
             create_file = True
         else:
-            print('    Preserving previous %s' % bname2)
+            if verbose: print('    Preserving previous %s' % bname2)
             create_file = False
     else:
-        print('    Copying %s to %s' % (bname1, bname2))
+        if verbose: print('    Copying %s to %s' % (bname1, bname2))
         create_file = True
 
     if create_file:

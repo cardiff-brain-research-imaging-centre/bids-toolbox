@@ -15,6 +15,7 @@ from dcm2bids import bidskit
 from scanModality import inferScanModality
 
 app = Flask(__name__)
+config = {}
 
 @app.route('/createBids', methods = ['POST'])
 def createBidsHandler():
@@ -55,7 +56,7 @@ def createBidsHandler():
                 raise RuntimeError("BIDS Toolbox error -- Error trying to copy subject "+sub+" scan "+ses+" data in folder "+parent_folder+'/dicom/'+sub+'/'+ses)
 
     ## Run bidskit 1st pass 
-    bidskit(parent_folder+'/dicom', parent_folder+'/output', data)
+    bidskit(parent_folder+'/dicom', parent_folder+'/output', data, config)
 
     ## Fill the bidskit configfile
     with open(parent_folder+'/derivatives/conversion/Protocol_Translator.json', 'r') as f:
@@ -78,7 +79,7 @@ def createBidsHandler():
         json.dump(bidskit_config, f)
 
     ## Run bidskit 2nd pass
-    bidskit(parent_folder+'/dicom', parent_folder+'/output', data)
+    bidskit(parent_folder+'/dicom', parent_folder+'/output', data, config)
 
     ## Add participants.json
     copyfile('participants.json',  parent_folder+'/output/participants.json')
@@ -163,7 +164,7 @@ def updateBidsHandler():
                     raise RuntimeError("BIDS Toolbox error -- Error trying to copy subject "+sub+" scan "+scan+" data in folder "+parent_folder+'/dicom/'+sub+'/'+scan)
 
     ## Run bidskit 2nd pass
-    bidskit(parent_folder+'/dicom', parent_folder+'/output', data)
+    bidskit(parent_folder+'/dicom', parent_folder+'/output', data, config)
 
     # To-Do: check if dataset_description is updated, if not, update it here
 
@@ -187,4 +188,8 @@ def updateBidsHandler():
     return 'UpdateBIDS finished'
 
 if __name__ == '__main__':
+
+    with open('config.json', 'r') as f:
+        config = json.load(f)
+
     app.run(port=5000, host='0.0.0.0', debug=True)
