@@ -242,8 +242,7 @@ def bidskit(indir, oudir, metadata, config):
         for bids_subj_dir in subject_dir_list:
             bids_prune_intendedfors(bids_subj_dir, True)
 
-    print('End of bidskit, dcm2niix time: '+str(round(d2n_time,3))+' seconds')
-
+    return d2n_time #Returns the time spent in dcm2niix
 
 def bids_prune_intendedfors(bids_subj_dir, fmap_only):
     """

@@ -21,6 +21,7 @@ config = {}
 def createBidsHandler():
 
     start_time = timer()
+    dcm2niix_time = 0.0
 
     ## Read body message and check format
     if request.is_json == False:
@@ -56,7 +57,8 @@ def createBidsHandler():
                 raise RuntimeError("BIDS Toolbox error -- Error trying to copy subject "+sub+" scan "+ses+" data in folder "+parent_folder+'/dicom/'+sub+'/'+ses)
 
     ## Run bidskit 1st pass 
-    bidskit(parent_folder+'/dicom', parent_folder+'/output', data, config)
+    t = bidskit(parent_folder+'/dicom', parent_folder+'/output', data, config)
+    dcm2niix_time += t
 
     ## Fill the bidskit configfile
     with open(parent_folder+'/derivatives/conversion/Protocol_Translator.json', 'r') as f:
@@ -79,7 +81,8 @@ def createBidsHandler():
         json.dump(bidskit_config, f)
 
     ## Run bidskit 2nd pass
-    bidskit(parent_folder+'/dicom', parent_folder+'/output', data, config)
+    t = bidskit(parent_folder+'/dicom', parent_folder+'/output', data, config)
+    dcm2niix_time += t
 
     ## Add participants.json
     copyfile('participants.json',  parent_folder+'/output/participants.json')
@@ -102,7 +105,7 @@ def createBidsHandler():
 
     end_time = timer()
 
-    print('createBIDS finished, '+str(round(end_time - start_time,3))+' seconds')
+    print('createBIDS finished - dcm2niix time: '+str(round(dcm2niix_time,3))+' s, Total time: '+str(round(end_time - start_time,3))+' s')
 
     return 'CreateBIDS finished'
 
@@ -164,7 +167,7 @@ def updateBidsHandler():
                     raise RuntimeError("BIDS Toolbox error -- Error trying to copy subject "+sub+" scan "+scan+" data in folder "+parent_folder+'/dicom/'+sub+'/'+scan)
 
     ## Run bidskit 2nd pass
-    bidskit(parent_folder+'/dicom', parent_folder+'/output', data, config)
+    dcm2niix_time = bidskit(parent_folder+'/dicom', parent_folder+'/output', data, config)
 
     # To-Do: check if dataset_description is updated, if not, update it here
 
@@ -183,8 +186,8 @@ def updateBidsHandler():
 
     end_time = timer()
 
-    print('updateBIDS finished, '+str(round(end_time - start_time,3))+' seconds')
-
+    print('updateBIDS finished - dcm2niix time: '+str(round(dcm2niix_time,3))+' s, Total time: '+str(round(end_time - start_time,3))+' s')
+            
     return 'UpdateBIDS finished'
 
 if __name__ == '__main__':
