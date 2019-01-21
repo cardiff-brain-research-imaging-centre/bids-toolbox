@@ -81,12 +81,13 @@ verbose = False
 def bidskit(indir, oudir, metadata, config):
     global verbose
 
-    d2n_time = 0.0
     if config['verbose'] == 'True':
         verbose = True
     else:
         verbose = False
     
+    d2n_time = 0.0 #Time spent in dcm2niix
+
     # Set first block of arguments
     dcm_root_dir = indir
     no_sessions = False
@@ -308,7 +309,7 @@ def bids_run_conversion(conv_dir, first_pass, prot_dict, src_dir, SID, SES, clea
 
     # Flag for working conversion directory cleanup
     do_cleanup = clean_conv_dir
-    print(prot_dict)
+    if verbose: print(prot_dict)
     if os.path.isdir(conv_dir):
 
         # glob returns the full relative path from the tmp dir
