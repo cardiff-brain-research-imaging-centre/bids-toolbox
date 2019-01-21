@@ -21,20 +21,29 @@ def createBidsHandler():
 
     start_time = timer()
 
+    ## Read body message and check format
     if request.is_json == False:
         raise RuntimeError("Incorrect body message -- not a JSON file")
 
     data = request.get_json()
-    
+
+    if 'scans' not in data:
+        raise RuntimeError("Incorrect body message -- Scans key not found")
+    if 'metadata' not in data:
+        raise RuntimeError("Incorrect body message -- Metadata key not found")
+    if 'output' not in data:
+        raise RuntimeError("Incorrect body message -- Output key not found")
+
     ## Create temporary working folder 
     parent_folder = '/tmp/bids_temp_'+str(time.time())
 
     try:
         os.mkdir(parent_folder)
     except FileExistsError:
-        print("Directory ",parent_folder, " already exists")
+        raise RuntimeError("BIDS Toolbox error -- Directory ",parent_folder, " already exists")
 
     ## Create and populate DICOM subfolder
+
     os.mkdir(parent_folder+'/dicom')
 
     for sub in data['scans']:
@@ -43,7 +52,7 @@ def createBidsHandler():
             try:
                 copytree(data['scans'][sub][ses], parent_folder+'/dicom/'+sub+'/'+ses)
             except:
-                print("ERROR: Error trying to copy subject "+sub+" scan "+ses+" data in folder "+parent_folder+'/dicom/'+sub+'/'+ses)
+                raise RuntimeError("BIDS Toolbox error -- Error trying to copy subject "+sub+" scan "+ses+" data in folder "+parent_folder+'/dicom/'+sub+'/'+ses)
 
     ## Run bidskit 1st pass 
     bidskit(parent_folder+'/dicom', parent_folder+'/output', data)
@@ -101,17 +110,25 @@ def updateBidsHandler():
 
     start_time = timer()
 
+    ## Read body message and check format
     if request.is_json == False:
         raise RuntimeError("Incorrect body message -- not a JSON file")
 
     data = request.get_json()
+
+    if 'scans' not in data:
+        raise RuntimeError("Incorrect body message -- Scans key not found")
+    if 'metadata' not in data:
+        raise RuntimeError("Incorrect body message -- Metadata key not found")
+    if 'output' not in data:
+        raise RuntimeError("Incorrect body message -- Output key not found")
 
     ## Create temporary working folder 
     parent_folder = '/tmp/bids_temp_'+str(time.time())
     try:
         os.mkdir(parent_folder)
     except FileExistsError:
-        print("Directory ",parent_folder, " already exists")
+        raise RuntimeError("BIDS Toolbox error -- Directory ",parent_folder, " already exists")
 
     ## Populate working folder
     os.mkdir(parent_folder+'/output')
@@ -136,14 +153,14 @@ def updateBidsHandler():
                     try:
                         copytree(data['scans'][sub][scan], parent_folder+'/dicom/'+sub+'/'+scan)
                     except:
-                        print("ERROR: Error trying to copy subject "+sub+" scan "+scan+" data in folder "+parent_folder+'/dicom/'+sub+'/'+scan)
+                        raise RuntimeError("BIDS Toolbox error -- Error trying to copy subject "+sub+" scan "+scan+" data in folder "+parent_folder+'/dicom/'+sub+'/'+scan)
         else:
             os.mkdir(parent_folder+'/dicom/'+sub)
             for scan in data['scans'][sub]:
                 try:
                     copytree(data['scans'][sub][scan], parent_folder+'/dicom/'+sub+'/'+scan)
                 except:
-                    print("ERROR: Error trying to copy subject "+sub+" scan "+scan+" data in folder "+parent_folder+'/dicom/'+sub+'/'+scan)
+                    raise RuntimeError("BIDS Toolbox error -- Error trying to copy subject "+sub+" scan "+scan+" data in folder "+parent_folder+'/dicom/'+sub+'/'+scan)
 
     ## Run bidskit 2nd pass
     bidskit(parent_folder+'/dicom', parent_folder+'/output', data)
