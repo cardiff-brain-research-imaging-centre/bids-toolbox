@@ -14,6 +14,8 @@ This software uses parts of [bidskit](https://github.com/jmtyszka/bidskit), but 
 
 Clone repository and run from parent directory: `python server.py`
 
+File `config.json` contains the configurations parameters for the toolbox. Right now, it allows to enable/disable verbose output console log.
+
 ### API
 
 The following POST methods are provided:
