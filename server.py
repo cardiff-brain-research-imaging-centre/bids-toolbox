@@ -66,11 +66,13 @@ def createBidsHandler():
 
     for key in bidskit_config:
         found = False
-        for mod in data['metadata']['modalities']:
-            if mod['tag'] in key:
-                bidskit_config[key][0] = mod['type']
-                bidskit_config[key][1] = mod['modality']
-                found = True
+        if 'modalities' in data['metadata']:
+            for mod in data['metadata']['modalities']:
+                if mod['tag'] in key:
+                    bidskit_config[key][0] = mod['type']
+                    bidskit_config[key][1] = mod['modality']
+                    found = True
+                    break
 
         if(found == False):
                 scan_type = inferScanModality(key, parent_folder)
