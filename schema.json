@@ -9,12 +9,12 @@
       "type":"object",
       "properties":
       {
-        "[0-9]{6}": {
+        "[0-9]{1,}": {
           "description":"Each item at this level represents a subject",
           "type" : "object",   
           "properties":
           {
-            "[0-9]{6}": {
+            "[0-9]{1,}": {
               "description":"Each item at this level represents a scan",
               "type" : "string" 
             }
