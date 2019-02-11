@@ -1,0 +1,41 @@
+{
+  "title": "BIDS Toolbox input",
+  "description": "Input data for the BIDS Toolbox",
+  "type": "object",
+  "properties": 
+  {
+    "scans":{
+      "description":"Paths to folders containing input DICOM files",
+      "type":"object",
+      "properties":
+      {
+        "type": "object",
+        "properties" :
+        {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      }
+    },
+    "output" : {
+      "description":"Paths to folder to load/store BIDS dataset",
+      "type":"string"
+    },
+    "metadata":{
+      "description":"Additional information for the dataset",
+      "type":"object",
+      "properties":
+      {
+        "modalities":
+        {
+          "type" : "array"
+        },
+        "datasetDescription":
+        {
+          "type" : "object"
+        }
+      }
+    }
+  },
+  "required": [ "scans", "output"]
+}
