@@ -9,11 +9,16 @@
       "type":"object",
       "properties":
       {
-        "type": "object",
-        "properties" :
-        {
-          "type": "number",
-          "exclusiveMinimum": 0
+        "[0-9]{6}": {
+          "description":"Each item at this level represents a subject",
+          "type" : "object",   
+          "properties":
+          {
+            "[0-9]{6}": {
+              "description":"Each item at this level represents a scan",
+              "type" : "string" 
+            }
+          }
         }
       }
     },
