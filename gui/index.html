@@ -18,6 +18,45 @@
 
   <body>
 
+	<script>
+
+	$(document).ready(function () {
+	    var counter = 0;
+
+	    $("#addrow").on("click", function () {
+		var newRow = $("<tr>");
+		var cols = "";
+
+		cols += '<td><input type="text" class="form-control" name="scan_name' + counter + '"/></td>';
+		cols += '<td class="col-sm-4"> <select id="scan_type' + counter + '" class="form-control"> <option selected>func</option> <option>dwi</option> <option>fmap</option> <option>anat</option> <option>meg</option> </select> </td>';
+		cols += '<td><input type="text" class="form-control" name="scan_type' + counter + '"/></td>';
+
+		cols += '<td><input type="button" class="ibtnDel btn btn-md btn-danger "  value="Delete"></td>';
+		newRow.append(cols);
+		$("table.order-list").append(newRow);
+		counter++;
+	    });
+
+	    $("table.order-list").on("click", ".ibtnDel", function (event) {
+		$(this).closest("tr").remove();       
+		counter -= 1
+	    });
+
+	});
+
+	function calculateRow(row) {
+	    var price = +row.find('input[name^="price"]').val();
+	}
+
+	function calculateGrandTotal() {
+	    var grandTotal = 0;
+	    $("table.order-list").find('input[name^="price"]').each(function () {
+		grandTotal += +$(this).val();
+	    });
+	    $("#grandtotal").text(grandTotal.toFixed(2));
+	}
+	</script>
+
     <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top"> 
       <a class="navbar-brand" href="https://www.cardiff.ac.uk/cardiff-university-brain-research-imaging-centre">Cardiff University Brain Research Imaging Centre (CUBRIC)</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
@@ -26,15 +65,97 @@
 
     <main role="main" class="container">
 
-
       <div class="starter-template">
     	<img src="brain_logo.png" class="img-rounded" alt="Brain logo here" height="60" width="60" > 
         <h1>The BIDS Toolbox</h1>
         <p class="lead">
-	 Use this tool create and manage Brain Imaging Data Structure (BIDS) datasets. <br>
-	 Choose between the options below to start. Learn more about BIDS <a href="http://bids.neuroimaging.io">here</a> 
+	 Use this tool to create and manage Brain Imaging Data Structure (BIDS) datasets.<br>
+	 Choose between the options below to start. Learn more about BIDS <a href="http://bids.neuroimaging.io">here</a>. 
 	</p>
+
       </div>
+
+<!--Control to select folder instead of file from:  https://stackoverflow.com/questions/12942436/how-to-get-folder-directory-from-html-input-type-file-or-any-other-way -->
+
+	<h4>Create dataset</h4>
+
+	Use this section to create a BIDS dataset from DICOM files.<br><br>
+
+	<form>
+	  <h5> Dataset folders: </h5>
+
+	  <div class="form-group">
+	    <label for="exampleFormControlFile1">Select root folder for DICOM files: </label>
+	    <input type="file" id="dicom_folder" webkitdirectory directory multiple/>
+	  </div>
+
+	  <div class="form-group">
+	    <label for="exampleFormControlFile1">Select output folder for BIDS dataset: </label>
+	    <input type="file" id="output_folder" webkitdirectory directory multiple/>
+	  </div>
+
+	  <h5> Metadata </h5>
+	  <b> Dataset description </b>
+
+	  <div class="form-row">
+	    <div class="col">
+	      <input type="text" class="form-control" placeholder="Key">
+	    </div>
+	    <div class="col">
+	      <input type="text" class="form-control" placeholder="Value">
+	    </div>
+	  </div>
+
+	  <b> Scan types </b>
+
+<!-- Dynamic table from: https://bootsnipp.com/snippets/402bQ -->
+
+	<div class="container">
+	    <table id="myTable" class=" table order-list">
+	    <thead>
+		<tr>
+		    <td>Name</td>
+		    <td>Scan type</td>
+		    <td>Scan modality</td>
+		</tr>
+	    </thead>
+	    <tbody>
+		<tr>
+		    <td class="col-sm-4">
+			<input type="text" name="scan_name" class="form-control" />
+		    </td>
+		    <td class="col-sm-4">
+		      <select id="scan_type" class="form-control">
+			<option selected>func</option>
+			<option>dwi</option>
+			<option>fmap</option>
+			<option>anat</option>
+			<option>meg</option>
+		      </select>
+		    </td>
+		    <td class="col-sm-3">
+			<input type="text" name="scan_type"  class="form-control"/>
+		    </td>
+		    <td class="col-sm-2"><a class="deleteRow"></a>
+
+		    </td>
+		</tr>
+	    </tbody>
+	    <tfoot>
+		<tr>
+		    <td colspan="5" style="text-align: left;">
+			<input type="button" class="btn btn-lg btn-block " id="addrow" value="Add Row" />
+		    </td>
+		</tr>
+		<tr>
+		</tr>
+	    </tfoot>
+	</table>
+	</div>
+
+	  <button type="submit" class="btn btn-primary">Create dataset</button>
+	</form>
+
 
     </main><!-- /.container -->
 
