@@ -16,6 +16,7 @@
 
     <!-- Custom styles for this template -->
     <link href="template.css" rel="stylesheet">
+
   </head>
 
   <body>
@@ -29,8 +30,28 @@
 	<script>
 
 	$(document).ready(function () {
-	    var scan_counter = 0;
-	    var desc_counter = 0;
+
+	    $("#createForm").hide();
+	    $("#updateForm").hide();
+
+	    $('input[type="radio"]').click(function(){
+		var inputValue = $(this).attr("value");
+
+		if (inputValue == "create")
+		{
+	    		$("#updateForm").hide();
+			$("#createForm").show();
+		}
+		else
+		{
+			$("#createForm").hide();
+	    		$("#updateForm").show();
+		}
+	    });
+
+	    var scan_counter = 0; //Number of rows in the createDataset, scan-types table
+	    var desc_c_counter = 0; //Number of rows in the createDataset, dataset-description table
+	    var desc_u_counter = 0; //Number of rows in the createDataset, dataset-description table
 
 	    $("#scan_addrow").on("click", function () {
 		var newRow = $("<tr>");
@@ -46,27 +67,45 @@
 		scan_counter++;
 	    });
 
-	    $("#desc_addrow").on("click", function () {
-		var newRow = $("<tr>");
-		var cols = "";
-
-		cols += '<td><input type="text" class="input-sm form-control" name="desc_key' + desc_counter + '"/></td>';
-		cols += '<td><input type="text" class="input-sm form-control" name="desc_value' + desc_counter + '"/></td>';
-
-		cols += '<td><input type="button" class="ibtnDel btn btn-md btn-danger "  value="Delete"></td>';
-		newRow.append(cols);
-		$("#desc_table").append(newRow);
-		desc_counter++;
-	    });
-
-	    $("#desc_table").on("click", ".ibtnDel", function (event) {
-		$(this).closest("tr").remove();       
-		desc_counter -= 1
-	    });
-
 	    $("#scan_types_table").on("click", ".ibtnDel", function (event) {
 		$(this).closest("tr").remove();       
 		scan_counter -= 1
+	    });
+
+	    $("#desc_create_addrow").on("click", function () {
+		var newRow = $("<tr>");
+		var cols = "";
+
+		cols += '<td><input type="text" class="input-sm form-control" name="desc_key' + desc_c_counter + '"/></td>';
+		cols += '<td><input type="text" class="input-sm form-control" name="desc_value' + desc_c_counter + '"/></td>';
+
+		cols += '<td><input type="button" class="ibtnDel btn btn-md btn-danger "  value="Delete"></td>';
+		newRow.append(cols);
+		$("#desc_create_table").append(newRow);
+		desc_c_counter++;
+	    });
+
+	    $("#desc_create_table").on("click", ".ibtnDel", function (event) {
+		$(this).closest("tr").remove();       
+		desc_c_counter -= 1
+	    });
+
+	    $("#desc_update_addrow").on("click", function () {
+		var newRow = $("<tr>");
+		var cols = "";
+
+		cols += '<td><input type="text" class="input-sm form-control" name="desc_key' + desc_u_counter + '"/></td>';
+		cols += '<td><input type="text" class="input-sm form-control" name="desc_value' + desc_u_counter + '"/></td>';
+
+		cols += '<td><input type="button" class="ibtnDel btn btn-md btn-danger "  value="Delete"></td>';
+		newRow.append(cols);
+		$("#desc_update_table").append(newRow);
+		desc_u_counter++;
+	    });
+
+	    $("#desc_update_table").on("click", ".ibtnDel", function (event) {
+		$(this).closest("tr").remove();       
+		desc_u_counter -= 1
 	    });
 
 	});
@@ -102,17 +141,17 @@
 
 	I want to:
 	<div class="form-check form-check-inline">
-	  <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1">
+	  <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="create">
 	  <label class="form-check-label" for="inlineRadio1">create a new dataset</label>
 	</div>
 	<div class="form-check form-check-inline">
-	  <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="option2">
+	  <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="update">
 	  <label class="form-check-label" for="inlineRadio2">update an existing dataset</label>
 	</div>
 
       </div>
 
-	<form>
+	<form id="createForm">
 	A BIDS dataset is created from a set of DICOM files and some additional descriptive metadata. Follow the steps below to provide the required information for the creation of your dataset.<br><br>
 
 	  <div class="form-group">
@@ -128,7 +167,7 @@
 	<b>Third:</b> BIDS datasets include a mandatory <i>dataset_description.json</i> file which describe their content. This file is arrange in key-value pairs and you should add in the following table those that you want added to your dataset. This step is <u>optional</u>.<br><br>
 
 	<div class="container">
-	    <table id="desc_table" class=" table order-list">
+	    <table id="desc_create_table" class=" table order-list">
 	    <thead>
 		<tr>
 		    <td>Key</td>
@@ -151,7 +190,7 @@
 	    <tfoot>
 		<tr>
 		    <td colspan="5" style="text-align: left;">
-			<input type="button" class="btn btn-lg btn-block " id="desc_addrow" value="Add Row" />
+			<input type="button" class="btn btn-lg btn-block " id="desc_create_addrow" value="Add Row" />
 		    </td>
 		</tr>
 		<tr>
@@ -209,6 +248,61 @@
 
 	  <button type="submit" class="btn btn-primary">Create dataset</button>
 	</form>
+
+
+	<form id="updateForm">
+	This section is used to append brain imaging files to an existing BIDS dataset created with this toolbox. Follow the steps below to provide the required information: <br><br>	
+
+	  <div class="form-group">
+	    <label for="exampleFormControlFile1"><b>First:</b> Select the folder of the BIDS dataset to be updated. This step is <u>obligatory</u>:  </label>
+	    <input type="file" id="output_folder" webkitdirectory directory multiple/>
+	  </div>
+
+	  <div class="form-group">
+	    <label for="exampleFormControlFile1"><b>Second:</b> Select the folder that contains the new DICOM files. This step is <u>obligatory</u>: </label>
+	    <input type="file" id="dicom_folder" webkitdirectory directory multiple/>
+	  </div>
+
+	<b>Third:</b> Use the following table to append/modify key-value pairs to the <i>dataset_description.json</i> file of the dataset. This step is <u>optional</u>.<br><br>
+
+	<div class="container">
+	    <table id="desc_update_table" class=" table order-list">
+	    <thead>
+		<tr>
+		    <td>Key</td>
+		    <td>Value</td>
+		</tr>
+	    </thead>
+	    <tbody>
+		<tr>
+		    <td>
+			<input type="text" name="desc_key" class="input-sm form-control" />
+		    </td>
+		    <td>
+			<input type="text" name="desc_value"  class="input-sm form-control"/>
+		    </td>
+		    <td><a class="deleteRow"></a>
+
+		    </td>
+		</tr>
+	    </tbody>
+	    <tfoot>
+		<tr>
+		    <td colspan="5" style="text-align: left;">
+			<input type="button" class="btn btn-lg btn-block " id="desc_update_addrow" value="Add Row" />
+		    </td>
+		</tr>
+		<tr>
+		</tr>
+	    </tfoot>
+	</table>
+	</div>
+
+	That's it. Check that all the values you've entered look good and click the button below to update your dataset. <br><br>
+
+	  <button type="submit" class="btn btn-primary">Update dataset</button>
+
+	</form>	
 
 	<br><br>
 	<small>
