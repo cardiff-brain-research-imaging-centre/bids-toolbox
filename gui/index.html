@@ -23,6 +23,9 @@
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery-slim.min.js"><\/script>')</script>
 
+<!--Control to select folder instead of file from:  https://stackoverflow.com/questions/12942436/how-to-get-folder-directory-from-html-input-type-file-or-any-other-way -->
+<!-- Dynamic table from: https://bootsnipp.com/snippets/402bQ -->
+
 	<script>
 
 	$(document).ready(function () {
@@ -97,29 +100,32 @@
 	 Choose between the options below to start. Learn more about BIDS <a href="http://bids.neuroimaging.io">here</a>. 
 	</p>
 
+	I want to:
+	<div class="form-check form-check-inline">
+	  <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1">
+	  <label class="form-check-label" for="inlineRadio1">create a new dataset</label>
+	</div>
+	<div class="form-check form-check-inline">
+	  <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="option2">
+	  <label class="form-check-label" for="inlineRadio2">update an existing dataset</label>
+	</div>
+
       </div>
 
-<!--Control to select folder instead of file from:  https://stackoverflow.com/questions/12942436/how-to-get-folder-directory-from-html-input-type-file-or-any-other-way -->
-
-	<h4>Create dataset</h4>
-
-	Use this section to create a BIDS dataset from DICOM files.<br><br>
-
 	<form>
-	  <h5> Dataset folders: </h5>
+	A BIDS dataset is created from a set of DICOM files and some additional descriptive metadata. Follow the steps below to provide the required information for the creation of your dataset.<br><br>
 
 	  <div class="form-group">
-	    <label for="exampleFormControlFile1">Select root folder for DICOM files: </label>
+	    <label for="exampleFormControlFile1"><b>First:</b> Select the folder that contains the raw DICOM files. This step is <u>obligatory</u>: </label>
 	    <input type="file" id="dicom_folder" webkitdirectory directory multiple/>
 	  </div>
 
 	  <div class="form-group">
-	    <label for="exampleFormControlFile1">Select output folder for BIDS dataset: </label>
+	    <label for="exampleFormControlFile1"><b>Second:</b> Select the output folder to store the BIDS dataset. This step is <u>obligatory</u>:  </label>
 	    <input type="file" id="output_folder" webkitdirectory directory multiple/>
 	  </div>
 
-	  <h5> Metadata </h5>
-	  <b> Dataset description </b>
+	<b>Third:</b> BIDS datasets include a mandatory <i>dataset_description.json</i> file which describe their content. This file is arrange in key-value pairs and you should add in the following table those that you want added to your dataset. This step is <u>optional</u>.<br><br>
 
 	<div class="container">
 	    <table id="desc_table" class=" table order-list">
@@ -154,9 +160,7 @@
 	</table>
 	</div>
 
-	  <b> Scan types </b>
-
-<!-- Dynamic table from: https://bootsnipp.com/snippets/402bQ -->
+	<b>Fourth:</b> During the creation of the BIDS dataset, the Toolbox will create a set of Nifti files based on the DICOM files you provide. However, the DICOM files don't declare explicitly the type of acquisition (whether the scan is structural, diffusion,... ) and knowing so is mandatory for the creation of the dataset. The Toolbox includes a heuristic to infer the type of scan based on several parameters of the DICOM headers, but it is not 100% accurate. If you know these values, you can define the type of scan for each of the series in the following fields. This step is <u>optional</u>.<br><br>
 
 	<div class="container">
 	    <table id="scan_types_table" class=" table order-list">
@@ -200,6 +204,8 @@
 	    </tfoot>
 	</table>
 	</div>
+
+	And that's it. Check that all the values you've entered look good and click the button below to start. <br><br>
 
 	  <button type="submit" class="btn btn-primary">Create dataset</button>
 	</form>
