@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="author" content="">
-    <link rel="icon" href="../../../../favicon.ico">
+    <link rel="icon" href="brain_logo_q1Z_icon.ico">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <title>The BIDS Toolbox</title>
 
@@ -18,6 +20,9 @@
 
   <body>
 
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery-slim.min.js"><\/script>')</script>
+
 	<script>
 
 	$(document).ready(function () {
@@ -28,7 +33,7 @@
 		var cols = "";
 
 		cols += '<td><input type="text" class="form-control" name="scan_name' + counter + '"/></td>';
-		cols += '<td class="col-sm-4"> <select id="scan_type' + counter + '" class="form-control"> <option selected>func</option> <option>dwi</option> <option>fmap</option> <option>anat</option> <option>meg</option> </select> </td>';
+		cols += '<td> <select id="scan_type' + counter + '" class="form-control"> <option selected>func</option> <option>dwi</option> <option>fmap</option> <option>anat</option> <option>meg</option> </select> </td>';
 		cols += '<td><input type="text" class="form-control" name="scan_type' + counter + '"/></td>';
 
 		cols += '<td><input type="button" class="ibtnDel btn btn-md btn-danger "  value="Delete"></td>';
@@ -121,10 +126,10 @@
 	    </thead>
 	    <tbody>
 		<tr>
-		    <td class="col-sm-4">
-			<input type="text" name="scan_name" class="form-control" />
+		    <td>
+			<input type="text" name="scan_name" class="input-sm form-control" />
 		    </td>
-		    <td class="col-sm-4">
+		    <td>
 		      <select id="scan_type" class="form-control">
 			<option selected>func</option>
 			<option>dwi</option>
@@ -133,10 +138,10 @@
 			<option>meg</option>
 		      </select>
 		    </td>
-		    <td class="col-sm-3">
-			<input type="text" name="scan_type"  class="form-control"/>
+		    <td>
+			<input type="text" name="scan_type"  class="input-sm form-control"/>
 		    </td>
-		    <td class="col-sm-2"><a class="deleteRow"></a>
+		    <td><a class="deleteRow"></a>
 
 		    </td>
 		</tr>
@@ -162,8 +167,6 @@
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery-slim.min.js"><\/script>')</script>
     <script src="https://getbootstrap.com/docs/4.0/assets/js/vendor/popper.min.js"></script>
     <script src="https://getbootstrap.com/docs/4.0/dist/js/bootstrap.min.js"></script>
   </body>
