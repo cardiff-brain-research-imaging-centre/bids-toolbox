@@ -26,25 +26,44 @@
 	<script>
 
 	$(document).ready(function () {
-	    var counter = 0;
+	    var scan_counter = 0;
+	    var desc_counter = 0;
 
-	    $("#addrow").on("click", function () {
+	    $("#scan_addrow").on("click", function () {
 		var newRow = $("<tr>");
 		var cols = "";
 
-		cols += '<td><input type="text" class="form-control" name="scan_name' + counter + '"/></td>';
-		cols += '<td> <select id="scan_type' + counter + '" class="form-control"> <option selected>func</option> <option>dwi</option> <option>fmap</option> <option>anat</option> <option>meg</option> </select> </td>';
-		cols += '<td><input type="text" class="form-control" name="scan_type' + counter + '"/></td>';
+		cols += '<td><input type="text" class="form-control" name="scan_name' + scan_counter + '"/></td>';
+		cols += '<td> <select id="scan_type' + scan_counter + '" class="form-control"> <option selected>func</option> <option>dwi</option> <option>fmap</option> <option>anat</option> <option>meg</option> </select> </td>';
+		cols += '<td><input type="text" class="form-control" name="scan_type' + scan_counter + '"/></td>';
 
 		cols += '<td><input type="button" class="ibtnDel btn btn-md btn-danger "  value="Delete"></td>';
 		newRow.append(cols);
-		$("table.order-list").append(newRow);
-		counter++;
+		$("#scan_types_table").append(newRow);
+		scan_counter++;
 	    });
 
-	    $("table.order-list").on("click", ".ibtnDel", function (event) {
+	    $("#desc_addrow").on("click", function () {
+		var newRow = $("<tr>");
+		var cols = "";
+
+		cols += '<td><input type="text" class="input-sm form-control" name="desc_key' + desc_counter + '"/></td>';
+		cols += '<td><input type="text" class="input-sm form-control" name="desc_value' + desc_counter + '"/></td>';
+
+		cols += '<td><input type="button" class="ibtnDel btn btn-md btn-danger "  value="Delete"></td>';
+		newRow.append(cols);
+		$("#desc_table").append(newRow);
+		desc_counter++;
+	    });
+
+	    $("#desc_table").on("click", ".ibtnDel", function (event) {
 		$(this).closest("tr").remove();       
-		counter -= 1
+		desc_counter -= 1
+	    });
+
+	    $("#scan_types_table").on("click", ".ibtnDel", function (event) {
+		$(this).closest("tr").remove();       
+		scan_counter -= 1
 	    });
 
 	});
@@ -102,21 +121,45 @@
 	  <h5> Metadata </h5>
 	  <b> Dataset description </b>
 
-	  <div class="form-row">
-	    <div class="col">
-	      <input type="text" class="form-control" placeholder="Key">
-	    </div>
-	    <div class="col">
-	      <input type="text" class="form-control" placeholder="Value">
-	    </div>
-	  </div>
+	<div class="container">
+	    <table id="desc_table" class=" table order-list">
+	    <thead>
+		<tr>
+		    <td>Key</td>
+		    <td>Value</td>
+		</tr>
+	    </thead>
+	    <tbody>
+		<tr>
+		    <td>
+			<input type="text" name="desc_key" class="input-sm form-control" />
+		    </td>
+		    <td>
+			<input type="text" name="desc_value"  class="input-sm form-control"/>
+		    </td>
+		    <td><a class="deleteRow"></a>
+
+		    </td>
+		</tr>
+	    </tbody>
+	    <tfoot>
+		<tr>
+		    <td colspan="5" style="text-align: left;">
+			<input type="button" class="btn btn-lg btn-block " id="desc_addrow" value="Add Row" />
+		    </td>
+		</tr>
+		<tr>
+		</tr>
+	    </tfoot>
+	</table>
+	</div>
 
 	  <b> Scan types </b>
 
 <!-- Dynamic table from: https://bootsnipp.com/snippets/402bQ -->
 
 	<div class="container">
-	    <table id="myTable" class=" table order-list">
+	    <table id="scan_types_table" class=" table order-list">
 	    <thead>
 		<tr>
 		    <td>Name</td>
@@ -149,7 +192,7 @@
 	    <tfoot>
 		<tr>
 		    <td colspan="5" style="text-align: left;">
-			<input type="button" class="btn btn-lg btn-block " id="addrow" value="Add Row" />
+			<input type="button" class="btn btn-lg btn-block " id="scan_addrow" value="Add Row" />
 		    </td>
 		</tr>
 		<tr>
@@ -161,6 +204,11 @@
 	  <button type="submit" class="btn btn-primary">Create dataset</button>
 	</form>
 
+	<br><br>
+	<small>
+	The BIDS Toolbox is part of the <i>Microstructural Imaging Data Centre (MIDaC)</i> project, grant reference ST/S00209X/1, funded by the Science and Technology Facilities Council (STFC) of the UK.  
+	</small>
+	<br><br>
 
     </main><!-- /.container -->
 
