@@ -108,6 +108,36 @@
 		desc_u_counter -= 1
 	    });
 
+            $("#createButton").click(function(){
+                alert("Here to start dataset creation")
+
+		//var filepath = $(#dicom_folder).val()
+		//alert("Filepath: "+filepath);
+
+		$("#desc_create_table > tbody > tr").each(function(){
+			var key = $(this).find('input[name^="desc_key"]').val();
+			var kvalue = $(this).find('input[name^="desc_value"]').val();
+
+		//	alert("Row: "+key+" "+kvalue);		
+		});	
+	
+                //alert("Here to start dataset creation: scan table")
+		$("#scan_types_table > tbody > tr").each(function(){
+			var sKey = $(this).find('input[name^="scan_name"]').val();
+			var sType = $(this).find('select[id^="scan_type"]').val();
+			var sMod = $(this).find('input[name^="scan_type"]').val();
+
+		//	alert("Row: "+sKey+" "+sType+" "+sMod);		
+		});	
+
+                //$.post("/createBids", {'message':msg})
+            });
+
+            $("#updateButton").click(function(){
+                //$.post()
+                alert("Here to start dataset update")
+            });
+
 	});
 
 	function calculateRow(row) {
@@ -246,7 +276,7 @@
 
 	And that's it. Check that all the values you've entered look good and click the button below to start. <br><br>
 
-	  <button type="submit" class="btn btn-primary">Create dataset</button>
+	  <button type="submit" id="createButton" class="btn btn-primary">Create dataset</button>
 	</form>
 
 
@@ -300,7 +330,7 @@
 
 	That's it. Check that all the values you've entered look good and click the button below to update your dataset. <br><br>
 
-	  <button type="submit" class="btn btn-primary">Update dataset</button>
+	  <button type="submit" id="updateButton" class="btn btn-primary">Update dataset</button>
 
 	</form>	
 
