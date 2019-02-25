@@ -1,5 +1,6 @@
 from flask import Flask
 from flask import request
+from flask import send_from_directory
 
 from shutil import copytree
 from shutil import copyfile
@@ -191,6 +192,17 @@ def updateBidsHandler():
     print('updateBIDS finished - dcm2niix time: '+str(round(dcm2niix_time,3))+' s, Total time: '+str(round(end_time - start_time,3))+' s')
             
     return 'UpdateBIDS finished'
+
+@app.route('/')
+def home():
+    file = open('gui/index.html','r')
+    html_string = file.read()
+    file.close()
+    return html_string
+
+@app.route('/gui/<path:path>')
+def send_gui_files(path):
+    return send_from_directory('gui', path)
 
 if __name__ == '__main__':
 
