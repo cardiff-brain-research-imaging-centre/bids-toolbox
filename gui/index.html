@@ -49,9 +49,30 @@
 		}
 	    });
 
-	    var scan_counter = 0; //Number of rows in the createDataset, scan-types table
+	    var dicom_c_counter = 0; //Number of rows in the createDataset, DICOM folders table
 	    var desc_c_counter = 0; //Number of rows in the createDataset, dataset-description table
-	    var desc_u_counter = 0; //Number of rows in the createDataset, dataset-description table
+	    var scan_counter = 0; //Number of rows in the createDataset, scan-types table
+
+	    var desc_u_counter = 0; //Number of rows in the updateDataset, dataset-description table
+
+	    $("#dicom_create_addrow").on("click", function () {
+		var newRow = $("<tr>");
+		var cols = "";
+
+		cols += '<td><input type="number" size="5" min="1" name="dicom_sub_create'+dicom_c_counter+'" class="input-sm form-control" /></td>';
+		cols += '<td><input type="number" size="5" min="1" name="dicom_ses_create'+dicom_c_counter+'"  class="input-sm form-control"/></td>';
+		cols += '<td><input type="text" name="dicom_path_create'+dicom_c_counter+'" class="input-sm form-control"/></td>';
+		cols += '<td><input type="button" class="ibtnDel btn btn-md btn-danger "  value="Delete"></td>';
+
+		newRow.append(cols);
+		$("#dicom_create_table").append(newRow);
+		dicom_c_counter++;
+	    });
+
+	    $("#dicom_create_table").on("click", ".ibtnDel", function (event) {
+		$(this).closest("tr").remove();       
+		dicom_c_counter -= 1
+	    });
 
 	    $("#scan_addrow").on("click", function () {
 		var newRow = $("<tr>");
@@ -184,17 +205,52 @@
 	<form id="createForm">
 	A BIDS dataset is created from a set of DICOM files and some additional descriptive metadata. Follow the steps below to provide the required information for the creation of your dataset.<br><br>
 
-	  <div class="form-group">
-	    <label for="exampleFormControlFile1"><b>First:</b> Select the folder that contains the raw DICOM files. This step is <u>obligatory</u>: </label>
-	    <input type="file" id="dicom_folder" webkitdirectory directory multiple/>
-	  </div>
+	    <p style="text-align:justify"><b>First:</b> Type the full path of the folders containing the DICOM files for each of sessions. In Linux, e.g., this could be similar to <i>/home&#173;/james&#173;/Documents&#173;/DICOMs&#173;/Sub01&#173;/Ses01</i>. This step is <u>obligatory</u>:</p>
+
+	<div class="container">
+	    <table id="dicom_create_table" class=" table order-list">
+	    <thead>
+		<tr>
+		    <td>Subject ID</td>
+		    <td>Session ID</td>
+		    <td>Folder containing DICOM files</td>
+		</tr>
+	    </thead>
+	    <tbody>
+		<tr>
+		    <td>
+			<input type="number" size="5" min="1" value="1" name="dicom_sub_create" class="input-sm form-control" />
+		    </td>
+		    <td>
+			<input type="number" size="5" min="1" value="1" name="dicom_ses_create"  class="input-sm form-control"/>
+		    </td>
+		    <td>
+			<input type="text" name="dicom_path_create"  class="input-sm form-control"/>
+		    </td>
+
+		    <td><a class="deleteRow"></a>
+		    </td>
+		</tr>
+	    </tbody>
+	    <tfoot>
+		<tr>
+		    <td colspan="5" style="text-align: left;">
+			<input type="button" class="btn btn-lg btn-block " id="dicom_create_addrow" value="Add session" />
+		    </td>
+		</tr>
+		<tr>
+		</tr>
+	    </tfoot>
+	</table>
+	</div>
+
 
 	  <div class="form-group">
-	    <label for="exampleFormControlFile1"><b>Second:</b> Select the output folder to store the BIDS dataset. This step is <u>obligatory</u>:  </label>
-	    <input type="file" id="output_folder" webkitdirectory directory multiple/>
+	    <p style="text-align:justify" ><b>Second:</b> Type the full path to the folder where you want to store the BIDS dataset. In Linux, e.g., this could be similar to <i>/home&#173;/james&#173;/Documents&#173;/BIDSdataset</i>. This step is <u>obligatory</u>:</p>
+	    <input type="text" id="output_folder" class="input-sm form-control" required/>
 	  </div>
 
-	<b>Third:</b> BIDS datasets include a mandatory <i>dataset_description.json</i> file which describe their content. This file is arranged in key-value pairs and you should add to the following table those that you want to be added to your <i>dataset_description.json</i> file. This step is <u>optional</u>.<br><br>
+	<p style="text-align:justify"><b>Third:</b> BIDS datasets include a mandatory <i>dataset_description.json</i> file which describe their content. This file is arranged in key-value pairs and you should add to the following table those that you want to be added to your <i>dataset_description.json</i> file. This step is <u>optional</u>.</p><br><br>
 
 	<div class="container">
 	    <table id="desc_create_table" class=" table order-list">
@@ -220,7 +276,7 @@
 	    <tfoot>
 		<tr>
 		    <td colspan="5" style="text-align: left;">
-			<input type="button" class="btn btn-lg btn-block " id="desc_create_addrow" value="Add Row" />
+			<input type="button" class="btn btn-lg btn-block " id="desc_create_addrow" value="Add dataset description item" />
 		    </td>
 		</tr>
 		<tr>
@@ -229,15 +285,15 @@
 	</table>
 	</div>
 
-	<b>Fourth:</b> During the creation of the BIDS dataset, the Toolbox will create a set of Nifti files based on the DICOM files you provide. However, the DICOM files don't declare explicitly the type of acquisition (whether the scan is structural, diffusion,... ) and knowing so is mandatory for the creation of the dataset. The Toolbox includes a heuristic to infer the type of scan based on several parameters of the DICOM headers, but it is not 100% accurate. If you know these values, you can define the type of scan for each of the series in the following fields. This step is <u>optional</u>.<br><br>
+	<p style="text-align:justify"><b>Fourth:</b> During the creation of the BIDS dataset, the Toolbox will create a set of Nifti files based on the DICOM files you provide. However, the DICOM files don't declare explicitly the type of acquisition (whether the scan is structural, diffusion,... ) and knowing so is mandatory for the creation of the dataset. The Toolbox includes a heuristic to infer the type of scan based on several parameters of the DICOM headers, but it is not 100% accurate. If you know these values, you can define the type of scan for each of the series in the following fields. This step is <u>optional</u>.</p><br><br>
 
 	<div class="container">
 	    <table id="scan_types_table" class=" table order-list">
 	    <thead>
 		<tr>
 		    <td>Name</td>
-		    <td>Scan type</td>
 		    <td>Scan modality</td>
+		    <td>Scan type</td>
 		</tr>
 	    </thead>
 	    <tbody>
@@ -265,7 +321,7 @@
 	    <tfoot>
 		<tr>
 		    <td colspan="5" style="text-align: left;">
-			<input type="button" class="btn btn-lg btn-block " id="scan_addrow" value="Add Row" />
+			<input type="button" class="btn btn-lg btn-block " id="scan_addrow" value="Add scan modality/type" />
 		    </td>
 		</tr>
 		<tr>
@@ -319,7 +375,7 @@
 	    <tfoot>
 		<tr>
 		    <td colspan="5" style="text-align: left;">
-			<input type="button" class="btn btn-lg btn-block " id="desc_update_addrow" value="Add Row" />
+			<input type="button" class="btn btn-lg btn-block " id="desc_update_addrow" value="Add dataset description item" />
 		    </td>
 		</tr>
 		<tr>
