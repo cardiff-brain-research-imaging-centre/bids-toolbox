@@ -30,8 +30,13 @@
 
 	$(document).ready(function () {
 
+	    //$("#mainHeader").hide();
 	    $("#createForm").hide();
 	    $("#updateForm").hide();
+	    $("#waitCreationLabel").hide();
+	    $("#successCreationLabel").hide();
+	    $("#waitUpdateLabel").hide();
+	    $("#successUpdateLabel").hide();
 
 	    $('input[type="radio"]').click(function(){
 		var inputValue = $(this).attr("value");
@@ -186,9 +191,27 @@
 			message["metadata"]["modalities"].push({"tag":sKey, "type":sType, "modality":sMod});
 		});	
 		
-		alert(JSON.stringify(message))
-                //$.post("/createBids", {'message':msg})
-                $.post("http://localhost:5001", message)
+	    	$("#mainHeader").hide();
+		$("#createForm").hide();
+		$("#updateForm").hide();
+		$("#waitCreationLabel").show();
+
+		$.ajax({
+			url:"/createBids",
+			type:"POST",
+			data:JSON.stringify(message),
+			contentType:"application/json",
+			dataType:"json",
+			//success: function(){
+			//	alert("Conversion finished");
+			//},
+			complete: function(){
+				//alert("Complete function");
+				$("#waitCreationLabel").hide();
+				$("#successCreationLabel").show();
+			}
+		})		
+
             });
 
             $("#updateButton").click(function(){
@@ -222,11 +245,12 @@
       <div class="starter-template">
     	<img src="gui/brain_logo.png" class="img-rounded" alt="Brain logo here" height="60" width="60" > 
         <h1>The BIDS Toolbox</h1>
-        <p class="lead">
+
+	<div  id="mainHeader"> 
+        <p  class="lead">
 	 Use this tool to create and manage Brain Imaging Data Structure (BIDS) datasets.<br>
 	 Choose between the options below to start. Learn more about BIDS <a href="http://bids.neuroimaging.io">here</a>. 
 	</p>
-
 	I want to:
 	<div class="form-check form-check-inline">
 	  <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="create">
@@ -235,6 +259,7 @@
 	<div class="form-check form-check-inline">
 	  <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="update">
 	  <label class="form-check-label" for="inlineRadio2">update an existing dataset</label>
+	</div>
 	</div>
 
       </div>
@@ -368,7 +393,7 @@
 
 	And that's it. Check that all the values you've entered look good and click the button below to start. <br><br>
 
-	  <button type="submit" id="createButton" class="btn btn-primary">Create dataset</button>
+	  <button type="button" id="createButton" class="btn btn-primary">Create dataset</button>
 	</form>
 
 
@@ -456,9 +481,24 @@
 
 	That's it. Check that all the values you've entered look good and click the button below to update your dataset. <br><br>
 
-	  <button type="submit" id="updateButton" class="btn btn-primary">Update dataset</button>
+	  <button type="button" id="updateButton" class="btn btn-primary">Update dataset</button>
 
 	</form>	
+
+      	<div class="starter-template">
+         <p id="waitCreationLabel" class="lead">
+	 Please, wait while your BIDS dataset is being created...<br>
+	 </p>
+         <p id="successCreationLabel" class="lead">
+	 Creation finished. Your dataset is now available in the specified output folder.<br>
+	 </p>
+         <p id="waitUpdateLabel" class="lead">
+	 Please, wait while your BIDS dataset is being updated...<br>
+	 </p>
+         <p id="successUpdateLabel" class="lead">
+	 Update finished. Your dataset is now available in the specified output folder.<br>
+	 </p>
+	</div>
 
 	<br><br>
 	<small>
