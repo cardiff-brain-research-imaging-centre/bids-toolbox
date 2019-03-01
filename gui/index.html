@@ -24,7 +24,6 @@
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery-slim.min.js"><\/script>')</script>
 
-<!--Control to select folder instead of file from:  https://stackoverflow.com/questions/12942436/how-to-get-folder-directory-from-html-input-type-file-or-any-other-way -->
 <!-- Dynamic table from: https://bootsnipp.com/snippets/402bQ -->
 
 	<script>
@@ -54,6 +53,7 @@
 	    var scan_counter = 0; //Number of rows in the createDataset, scan-types table
 
 	    var desc_u_counter = 0; //Number of rows in the updateDataset, dataset-description table
+	    var dicom_u_counter = 0; //Number of rows in the updateDataset, DICOM folders table
 
 	    $("#dicom_create_addrow").on("click", function () {
 		var newRow = $("<tr>");
@@ -73,6 +73,27 @@
 		$(this).closest("tr").remove();       
 		dicom_c_counter -= 1
 	    });
+
+	    $("#dicom_update_addrow").on("click", function () {
+		var newRow = $("<tr>");
+		var cols = "";
+
+		cols += '<td><input type="number" size="5" min="1" name="dicom_sub_update'+dicom_u_counter+'" class="input-sm form-control" /></td>';
+		cols += '<td><input type="number" size="5" min="1" name="dicom_ses_update'+dicom_u_counter+'"  class="input-sm form-control"/></td>';
+		cols += '<td><input type="text" name="dicom_path_update'+dicom_u_counter+'" class="input-sm form-control"/></td>';
+		cols += '<td><input type="button" class="ibtnDel btn btn-md btn-danger "  value="Delete"></td>';
+
+		newRow.append(cols);
+		$("#dicom_update_table").append(newRow);
+		dicom_u_counter++;
+	    });
+
+	    $("#dicom_update_table").on("click", ".ibtnDel", function (event) {
+		$(this).closest("tr").remove();       
+		dicom_u_counter -= 1
+	    });
+
+
 
 	    $("#scan_addrow").on("click", function () {
 		var newRow = $("<tr>");
@@ -205,7 +226,7 @@
 	<form id="createForm">
 	A BIDS dataset is created from a set of DICOM files and some additional descriptive metadata. Follow the steps below to provide the required information for the creation of your dataset.<br><br>
 
-	    <p style="text-align:justify"><b>First:</b> Type the full path of the folders containing the DICOM files for each of sessions. In Linux, e.g., this could be similar to <i>/home&#173;/james&#173;/Documents&#173;/DICOMs&#173;/Sub01&#173;/Ses01</i>. This step is <u>obligatory</u>:</p>
+	    <p style="text-align:justify"><b>First:</b> Type the full path of the folders containing the DICOM files for each of sessions. In Linux, e.g., this could be similar to <i>/home&#173;/james&#173;/ ... /DICOMs&#173;/Sub01&#173;/Ses01</i> for the folder containing the DICOM files of subject 1, session 1. This step is <u>obligatory</u>:</p>
 
 	<div class="container">
 	    <table id="dicom_create_table" class=" table order-list">
@@ -244,10 +265,9 @@
 	</table>
 	</div>
 
-
 	  <div class="form-group">
 	    <p style="text-align:justify" ><b>Second:</b> Type the full path to the folder where you want to store the BIDS dataset. In Linux, e.g., this could be similar to <i>/home&#173;/james&#173;/Documents&#173;/BIDSdataset</i>. This step is <u>obligatory</u>:</p>
-	    <input type="text" id="output_folder" class="input-sm form-control" required/>
+	    <input type="text" id="output_folder_create" class="input-sm form-control" required/>
 	  </div>
 
 	<p style="text-align:justify"><b>Third:</b> BIDS datasets include a mandatory <i>dataset_description.json</i> file which describe their content. This file is arranged in key-value pairs and you should add to the following table those that you want to be added to your <i>dataset_description.json</i> file. This step is <u>optional</u>.</p><br><br>
@@ -340,14 +360,48 @@
 	This section is used to append brain imaging files to an existing BIDS dataset created with this toolbox. Follow the steps below to provide the required information: <br><br>	
 
 	  <div class="form-group">
-	    <label for="exampleFormControlFile1"><b>First:</b> Select the folder of the BIDS dataset to be updated. This step is <u>obligatory</u>:  </label>
-	    <input type="file" id="output_folder" webkitdirectory directory multiple/>
+	    <p style="text-align:justify" ><b>First:</b> Type the full path to the folder of the BIDS dataset to be updated. In Linux, e.g., this could be similar to <i>/home&#173;/james&#173;/ ... /BIDSdataset</i>. This step is <u>obligatory</u>:</p>
+	    <input type="text" id="output_folder_update" class="input-sm form-control" required/>
 	  </div>
 
-	  <div class="form-group">
-	    <label for="exampleFormControlFile1"><b>Second:</b> Select the folder that contains the new DICOM files. This step is <u>obligatory</u>: </label>
-	    <input type="file" id="dicom_folder" webkitdirectory directory multiple/>
-	  </div>
+	    <p style="text-align:justify"><b>Second:</b> Type the full path of the folders containing the DICOM files for the new sessions. This step is <u>obligatory</u>:</p>
+
+	<div class="container">
+	    <table id="dicom_update_table" class=" table order-list">
+	    <thead>
+		<tr>
+		    <td>Subject ID</td>
+		    <td>Session ID</td>
+		    <td>Folder containing DICOM files</td>
+		</tr>
+	    </thead>
+	    <tbody>
+		<tr>
+		    <td>
+			<input type="number" size="5" min="1" value="1" name="dicom_sub_update" class="input-sm form-control" />
+		    </td>
+		    <td>
+			<input type="number" size="5" min="1" value="1" name="dicom_ses_update"  class="input-sm form-control"/>
+		    </td>
+		    <td>
+			<input type="text" name="dicom_path_update"  class="input-sm form-control"/>
+		    </td>
+
+		    <td><a class="deleteRow"></a>
+		    </td>
+		</tr>
+	    </tbody>
+	    <tfoot>
+		<tr>
+		    <td colspan="5" style="text-align: left;">
+			<input type="button" class="btn btn-lg btn-block " id="dicom_update_addrow" value="Add session" />
+		    </td>
+		</tr>
+		<tr>
+		</tr>
+	    </tfoot>
+	</table>
+	</div>
 
 	<b>Third:</b> Use the following table to append/modify key-value pairs to the <i>dataset_description.json</i> file of the dataset. This step is <u>optional</u>.<br><br>
 
