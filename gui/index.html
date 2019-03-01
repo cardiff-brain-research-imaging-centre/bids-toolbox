@@ -21,8 +21,8 @@
 
   <body>
 
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery-slim.min.js"><\/script>')</script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"</script>
+    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
 
 <!-- Dynamic table from: https://bootsnipp.com/snippets/402bQ -->
 
@@ -151,28 +151,44 @@
 	    });
 
             $("#createButton").click(function(){
-                alert("Here to start dataset creation")
+	
+		var message = new Object();
+		message["scans"] = {}
+		message["metadata"] = {}
+		message["metadata"]["modalities"] = []
+		message["metadata"]["datasetDescription"] = {}
 
-		//var filepath = $(#dicom_folder).val()
-		//alert("Filepath: "+filepath);
+		$("#dicom_create_table > tbody > tr").each(function(){
+			var sub = $(this).find('input[name^="dicom_sub_create"]').val();
+			if((sub in message["scans"]) == false)
+			{
+				message["scans"][sub] = {};
+			}
+			var ses = $(this).find('input[name^="dicom_ses_create"]').val();
+			var path = $(this).find('input[name^="dicom_path_create"]').val();
+			message["scans"][sub][ses] = path;
+		});
+
+		message["output"] = $("#output_folder_create").val();
 
 		$("#desc_create_table > tbody > tr").each(function(){
 			var key = $(this).find('input[name^="desc_key"]').val();
 			var kvalue = $(this).find('input[name^="desc_value"]').val();
-
-		//	alert("Row: "+key+" "+kvalue);		
+	
+			message["metadata"]["datasetDescription"][key] = kvalue;
 		});	
 	
-                //alert("Here to start dataset creation: scan table")
 		$("#scan_types_table > tbody > tr").each(function(){
 			var sKey = $(this).find('input[name^="scan_name"]').val();
 			var sType = $(this).find('select[id^="scan_type"]').val();
 			var sMod = $(this).find('input[name^="scan_type"]').val();
 
-		//	alert("Row: "+sKey+" "+sType+" "+sMod);		
+			message["metadata"]["modalities"].push({"tag":sKey, "type":sType, "modality":sMod});
 		});	
-
+		
+		alert(JSON.stringify(message))
                 //$.post("/createBids", {'message':msg})
+                $.post("http://localhost:5001", message)
             });
 
             $("#updateButton").click(function(){
@@ -270,7 +286,7 @@
 	    <input type="text" id="output_folder_create" class="input-sm form-control" required/>
 	  </div>
 
-	<p style="text-align:justify"><b>Third:</b> BIDS datasets include a mandatory <i>dataset_description.json</i> file which describe their content. This file is arranged in key-value pairs and you should add to the following table those that you want to be added to your <i>dataset_description.json</i> file. This step is <u>optional</u>.</p><br><br>
+	<p style="text-align:justify"><b>Third:</b> BIDS datasets include a mandatory <i>dataset_description.json</i> file which describe their content. This file is arranged in key-value pairs and you should add to the following table those that you want to be added to your <i>dataset_description.json</i> file. This step is <u>optional</u>.</p>
 
 	<div class="container">
 	    <table id="desc_create_table" class=" table order-list">
@@ -305,7 +321,7 @@
 	</table>
 	</div>
 
-	<p style="text-align:justify"><b>Fourth:</b> During the creation of the BIDS dataset, the Toolbox will create a set of Nifti files based on the DICOM files you provide. However, the DICOM files don't declare explicitly the type of acquisition (whether the scan is structural, diffusion,... ) and knowing so is mandatory for the creation of the dataset. The Toolbox includes a heuristic to infer the type of scan based on several parameters of the DICOM headers, but it is not 100% accurate. If you know these values, you can define the type of scan for each of the series in the following fields. This step is <u>optional</u>.</p><br><br>
+	<p style="text-align:justify"><b>Fourth:</b> During the creation of the BIDS dataset, the Toolbox will create a set of Nifti files based on the DICOM files you provide. However, the DICOM files don't declare explicitly the type of acquisition (whether the scan is structural, diffusion,... ) and knowing so is mandatory for the creation of the dataset. The Toolbox includes a heuristic to infer the type of scan based on several parameters of the DICOM headers, but it is not 100% accurate. If you know these values, you can define the type of scan for each of the series in the following fields. This step is <u>optional</u>.</p>
 
 	<div class="container">
 	    <table id="scan_types_table" class=" table order-list">
