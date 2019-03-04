@@ -215,8 +215,52 @@
             });
 
             $("#updateButton").click(function(){
-                //$.post()
-                alert("Here to start dataset update")
+
+		var message = new Object();
+		message["scans"] = {}
+		message["metadata"] = {}
+		message["metadata"]["datasetDescription"] = {}
+
+		$("#dicom_update_table > tbody > tr").each(function(){
+			var sub = $(this).find('input[name^="dicom_sub_update"]').val();
+			if((sub in message["scans"]) == false)
+			{
+				message["scans"][sub] = {};
+			}
+			var ses = $(this).find('input[name^="dicom_ses_update"]').val();
+			var path = $(this).find('input[name^="dicom_path_update"]').val();
+			message["scans"][sub][ses] = path;
+		});
+
+		message["output"] = $("#output_folder_update").val();
+
+		$("#desc_update_table > tbody > tr").each(function(){
+			var key = $(this).find('input[name^="desc_key"]').val();
+			var kvalue = $(this).find('input[name^="desc_value"]').val();
+	
+			message["metadata"]["datasetDescription"][key] = kvalue;
+		});	
+		
+	    	$("#mainHeader").hide();
+		$("#createForm").hide();
+		$("#updateForm").hide();
+		$("#waitUpdateLabel").show();
+
+		$.ajax({
+			url:"/updateBids",
+			type:"POST",
+			data:JSON.stringify(message),
+			contentType:"application/json",
+			dataType:"json",
+			//success: function(){
+			//	alert("Conversion finished");
+			//},
+			complete: function(){
+				//alert("Complete function");
+				$("#waitUpdateLabel").hide();
+				$("#successUpdateLabel").show();
+			}
+		})		
             });
 
 	});
