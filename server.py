@@ -1,6 +1,7 @@
 from flask import Flask
 from flask import request
 from flask import send_from_directory
+from flask import Response
 
 from shutil import copytree
 from shutil import copyfile
@@ -192,6 +193,34 @@ def updateBidsHandler():
     print('updateBIDS finished - dcm2niix time: '+str(round(dcm2niix_time,3))+' s, Total time: '+str(round(end_time - start_time,3))+' s')
             
     return 'UpdateBIDS finished'
+
+@app.route('/checkDataset', methods = ['POST'])
+def checkDatasetHandler():
+
+    ## Read body message and check format
+    if request.is_json == False:
+        raise RuntimeError("Incorrect body message -- not a JSON file")
+
+    message = request.get_json()
+    folder = message["folder"] #Input folder to be validated 
+    data = {'valid'  : 'no'} #Response message, not valid by default
+
+    #Check if folder and hidden file exist, if so return # of subjects, if not error
+    if(os.path.exists(folder)):
+        if(os.path.exists(folder+'/.dataset.toolbox')):
+            with open(folder+'/.dataset.toolbox', 'r') as f:
+                dataset_props = json.load(f)
+            data['valid'] = 'yes'
+            data['subjects'] = len(dataset_props['scans'])
+        else:
+            data['error'] = 'Folder found but BIDS Toolbox history file not found'
+    else:
+        data['error'] = 'Folder not found'
+
+    js = json.dumps(data)
+    resp = Response(js, status=200, mimetype='application/json')
+ 
+    return resp
 
 @app.route('/')
 def home():

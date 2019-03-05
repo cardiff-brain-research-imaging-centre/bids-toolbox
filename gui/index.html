@@ -263,6 +263,35 @@
 		})		
             });
 
+
+            $("#checkDatasetButton").click(function(){
+
+		var message = new Object();
+		message["folder"] = $("#output_folder_update").val();
+
+		$.ajax({
+			url:"/checkDataset",
+			type:"POST",
+			data:JSON.stringify(message),
+			contentType:"application/json",
+			dataType:"json",
+			success: function(response){
+				var valid = response['valid'];
+				if (valid == 'yes')
+				{	//Write number of subjects in dataset and enable button
+					$("#checkResult").text("All good, dataset has "+response['subjects']+" subjects");
+					$("#updateButton").prop('disabled',false)
+				}
+				else
+				{	//Write error in div next to button
+					$("#checkResult").text("Error: "+response['error']);
+				}
+			},
+			complete: function(data){
+			}
+		})		
+	    });
+
 	});
 
 	function calculateRow(row) {
@@ -447,6 +476,12 @@
 	  <div class="form-group">
 	    <p style="text-align:justify" ><b>First:</b> Type the full path to the folder of the BIDS dataset to be updated. In Linux, e.g., this could be similar to <i>/home&#173;/james&#173;/ ... /BIDSdataset</i>. This step is <u>obligatory</u>:</p>
 	    <input type="text" id="output_folder_update" class="input-sm form-control" required/>
+	    <br>
+	    <p style="text-align:justify" >After typing the full path to the dataset, press the <i>Check dataset</i> below to check that the folder is correct.</p>
+	  <button type="button" id="checkDatasetButton" class="btn btn-primary">Check dataset</button>
+	  <div id="checkResultPadding" style="display: inline-block">      </div>
+	  <div id="checkResult" style="display: inline-block"></div>
+	  <br>
 	  </div>
 
 	    <p style="text-align:justify"><b>Second:</b> Type the full path of the folders containing the DICOM files for the new sessions. This step is <u>obligatory</u>:</p>
@@ -525,7 +560,7 @@
 
 	That's it. Check that all the values you've entered look good and click the button below to update your dataset. <br><br>
 
-	  <button type="button" id="updateButton" class="btn btn-primary">Update dataset</button>
+	  <button type="button" id="updateButton" class="btn btn-primary" disabled>Update dataset</button>
 
 	</form>	
 
