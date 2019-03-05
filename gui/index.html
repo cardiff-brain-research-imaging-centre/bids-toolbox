@@ -283,8 +283,9 @@
 					$("#updateButton").prop('disabled',false)
 				}
 				else
-				{	//Write error in div next to button
+				{	//Write error in div next to button, disable button
 					$("#checkResult").text("Error: "+response['error']);
+					$("#updateButton").prop('disabled',true)
 				}
 			},
 			complete: function(data){
@@ -340,7 +341,7 @@
 	<form id="createForm">
 	A BIDS dataset is created from a set of DICOM files and some additional descriptive metadata. Follow the steps below to provide the required information for the creation of your dataset.<br><br>
 
-	    <p style="text-align:justify"><b>First:</b> Type the full path of the folders containing the DICOM files for each of sessions. In Linux, e.g., this could be similar to <i>/home&#173;/james&#173;/ ... /DICOMs&#173;/Sub01&#173;/Ses01</i> for the folder containing the DICOM files of subject 1, session 1. This step is <u>obligatory</u>:</p>
+	    <p style="text-align:justify"><b>First:</b> Type the full path of the folders containing the DICOM files for each of sessions. In Linux, e.g., this could be similar to <i>/home /james /DICOMs /Sub01 /Ses01</i> for the folder containing the DICOM files of subject 1, session 1. This step is <u>obligatory</u>:</p>
 
 	<div class="container">
 	    <table id="dicom_create_table" class=" table order-list">
@@ -380,7 +381,7 @@
 	</div>
 
 	  <div class="form-group">
-	    <p style="text-align:justify" ><b>Second:</b> Type the full path to the folder where you want to store the BIDS dataset. In Linux, e.g., this could be similar to <i>/home&#173;/james&#173;/Documents&#173;/BIDSdataset</i>. This step is <u>obligatory</u>:</p>
+	    <p style="text-align:justify" ><b>Second:</b> Type the full path to the folder where you want to store the BIDS dataset. In Linux, e.g., this could be similar to <i>/home /james /Documents /BIDSdataset</i>. This step is <u>obligatory</u>:</p>
 	    <input type="text" id="output_folder_create" class="input-sm form-control" required/>
 	  </div>
 
