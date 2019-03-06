@@ -202,13 +202,23 @@
 			data:JSON.stringify(message),
 			contentType:"application/json",
 			dataType:"json",
-			//success: function(){
-			//	alert("Conversion finished");
-			//},
+			success: function(response){
+				var status = response['status'];
+				if (status == 'success')
+				{
+					$("#waitCreationLabel").hide();
+					$("#successCreationLabel").show();
+				}
+				else
+				{
+					$("#waitCreationLabel").hide();
+					$("#successCreationLabel").text(response['errorMessage']);
+					$("#successCreationLabel").show();
+				}
+			},
 			complete: function(){
 				//alert("Complete function");
-				$("#waitCreationLabel").hide();
-				$("#successCreationLabel").show();
+
 			}
 		})		
 

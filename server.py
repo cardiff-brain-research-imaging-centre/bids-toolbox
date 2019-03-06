@@ -24,6 +24,7 @@ def createBidsHandler():
 
     start_time = timer()
     dcm2niix_time = 0.0
+	resp_data = {} #Object to return status at the end of function
 
     ## Read body message and check format
     if request.is_json == False:
@@ -66,6 +67,11 @@ def createBidsHandler():
     with open(parent_folder+'/derivatives/conversion/Protocol_Translator.json', 'r') as f:
         bidskit_config = json.load(f)
 
+    any_unclassified = False #This variable will be used to flag potential undetected scan types 
+    unclassified_list = []
+
+    #For each scan tag/key, first check if the scan modality/type was provided,
+    #if not, call the Toolbox heuristic to detect.
     for key in bidskit_config:
         found = False
         if 'modalities' in data['metadata']:
@@ -77,9 +83,25 @@ def createBidsHandler():
                     break
 
         if(found == False):
-                scan_type = inferScanModality(key, parent_folder)
-                bidskit_config[key][0] = scan_type['type']
+            scan_type = inferScanModality(key, parent_folder)
+            if scan['modality'] == 'unclassified':
+                any_unclassified = True
+                unclassified_list.append(key)
+            else:
+        	bidskit_config[key][0] = scan_type['type']
                 bidskit_config[key][1] = scan_type['modality']
+
+    #This if triggers is there has been any scan key with no user provided type/modality and 
+    #and for which the Toolbox heuristic has not been able to classify. This stops the conversion.
+    if any_unclassified:
+        resp_data['status'] = 'error'
+	resp_data['errorMessage'] = 'Scan modality not provided and not detected for the following tags: '
+	resp_data['errorMessage'] += str(unclassified_list)
+
+	resp_js = json.dumps(resp_data)
+	resp = Response(resp_js, status=200, mimetype='application/json')
+	 
+	return resp
 
     with open(parent_folder+'/derivatives/conversion/Protocol_Translator.json', "w") as f:
         json.dump(bidskit_config, f)
@@ -111,7 +133,14 @@ def createBidsHandler():
 
     print('createBIDS finished - dcm2niix time: '+str(round(dcm2niix_time,3))+' s, Total time: '+str(round(end_time - start_time,3))+' s')
 
-    return 'CreateBIDS finished'
+    #Send successful conversion message
+    resp_data['status'] = 'success'
+
+    resp_js = json.dumps(resp_data)
+    resp = Response(resp_js, status=200, mimetype='application/json')
+ 
+    return resp
+
 
 @app.route('/updateBids', methods = ['POST'])
 def updateBidsHandler():
@@ -192,7 +221,14 @@ def updateBidsHandler():
 
     print('updateBIDS finished - dcm2niix time: '+str(round(dcm2niix_time,3))+' s, Total time: '+str(round(end_time - start_time,3))+' s')
             
-    return 'UpdateBIDS finished'
+    #Send successful conversion message
+    resp_data['status'] = 'success'
+
+    resp_js = json.dumps(resp_data)
+    resp = Response(resp_js, status=200, mimetype='application/json')
+ 
+    return resp
+
 
 @app.route('/checkDataset', methods = ['POST'])
 def checkDatasetHandler():

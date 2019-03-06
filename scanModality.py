@@ -26,50 +26,55 @@ def inferScanModality(tag, parent_folder):
             with open(sidecar_file, 'r') as f:
                 sidecar_data = json.load(f)
 
+            SS = sidecar_data['ScanningSequence']
             FA = sidecar_data['FlipAngle']
             TE = sidecar_data['EchoTime']
             TR = sidecar_data['RepetitionTime']
+					
+            if 'GR' in SS:
+            		if TE < 30:
+					if FA == 90:
+						if TR < 800:
+							scan['type'] = 'anat'
+							scan['modality'] = 'T1w'                       
+						else:
+							scan['type'] = 'anat'
+							scan['modality'] = 'PD'
+					elif FA >= 5 and FA <= 20:
+						scan['type'] = 'anat'
+						scan['modality'] = 'T1w'   
+					else:
+						scan['type'] = 'anat'
+						scan['modality'] = 'T2star'     
+				else:
+						scan['modality'] = 'unclassified'     
 
-            if TE < 30:
-                if FA == 90:
-                    if TR < 800:
-                        scan['type'] = 'anat'
-                        scan['modality'] = 'T1w'                       
-                    else:
-                        scan['type'] = 'anat'
-                        scan['modality'] = 'PD'
-                elif FA >= 5 and FA <= 20:
-                    scan['type'] = 'anat'
-                    scan['modality'] = 'T1w'   
-                else:
-                    scan['type'] = 'anat'
-                    scan['modality'] = 'T2star'     
+			elif 'EP' in SS:
+				if TE >= 30 and TE <= 60:
+					scan['type'] = 'func'
+					scan['modality'] = 'BOLD'
+				else:
+					scan['modality'] = 'unclassified'     
 
-            elif TE >= 30 and TE <= 60:
-                scan['type'] = 'func'
-                scan['modality'] = 'BOLD'
-
-            elif TE > 60 and TE <= 80:
-                if FA == 90:
-                    scan['type'] = 'anat'
-                    scan['modality'] = 'T2w'     
-                else:
-                    scan['type'] = 'IR'
-                    scan['modality'] = 'STIR'   
-        
-            else:
-                if TR >= 2000 and TR <= 3000:
-                    scan['type'] = 'anat'
-                    scan['modality'] = 'T2w'   
-                elif TR > 3000:
-                    scan['type'] = 'anat'
-                    scan['modality'] = 'FLAIR'   
-                else:
-                    scan['type'] = 'anat'
-                    scan['modality'] = 'T1w'
-        
-        else: # Branch to default
-            scan['type'] = 'anat'
-            scan['modality'] = 'T1w'
+			elif 'SE' in SS:
+				if 'IR' in SS:
+					if 'InversionTime' in sidecar_data:
+						TI = sidecar_data['InversionTime']				
+						if TI < 1:
+							scan['type'] = 'IR'
+							scan['modality'] = 'STIR'   
+						else:
+		                    scan['type'] = 'anat'
+        		            scan['modality'] = 'FLAIR'   		
+					else: 
+						scan['modality'] = 'unclassified'     
+				else:
+					if TE >= 60:
+						scan['type'] = 'anat'
+						scan['modality'] = 'T2w'   
+					else:
+						scan['modality'] = 'unclassified'             
+        	else: # If not GR, EP or SE: unclassified
+            	scan['modality'] = 'unclassified' 
 
     return scan
