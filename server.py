@@ -233,7 +233,16 @@ def updateBidsHandler():
     ## Run bidskit 2nd pass
     dcm2niix_time = bidskit(parent_folder+'/dicom', parent_folder+'/output', data, config)
 
-    # To-Do: check if dataset_description is updated, if not, update it here
+    # Check for existence and add new items to add to dataset_description
+    if len(data['metadata']['datasetDescription'] > 0):
+        with open(parent_folder+'/output/dataset_description.json', 'r') as f:
+            dataset_props = json.load(f)
+
+        for item in data['metadata']['datasetDescription']:
+            dataset_props[item] = data['metadata']['datasetDescription'][item]
+
+        with open(parent_folder+'/output/dataset_description.json', "w") as f:
+            json.dump(dataset_props, f)
 
     ## Store metadata for BIDS toolbox in hidden file
     with open(parent_folder+'/.dataset.toolbox', "w") as f:
