@@ -99,7 +99,7 @@ def createBidsHandler():
 
         if(found == False):
             scan_type = inferScanModality(key, parent_folder)
-            if scan['modality'] == 'unclassified':
+            if scan_type['modality'] == 'unclassified':
                 any_unclassified = True
                 unclassified_list.append(key)
             else:
@@ -234,7 +234,7 @@ def updateBidsHandler():
     dcm2niix_time = bidskit(parent_folder+'/dicom', parent_folder+'/output', data, config)
 
     # Check for existence and add new items to add to dataset_description
-    if len(data['metadata']['datasetDescription'] > 0):
+    if len(data['metadata']['datasetDescription']) > 0:
         with open(parent_folder+'/output/dataset_description.json', 'r') as f:
             dataset_props = json.load(f)
 
