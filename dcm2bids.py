@@ -563,9 +563,9 @@ def bids_init(bids_src_dir, metadata, overwrite=False):
     # Create template JSON dataset description
     datadesc_json = os.path.join(bids_src_dir, 'dataset_description.json')
     meta_dict = dict({'BIDSVersion': "1.0.0",
-               'License': "This data is made available under the Creative Commons BY-SA 4.0 International License.",
-               'Name': "The dataset name goes here",
-               'ReferencesAndLinks': ["References and links for this dataset go here"]})
+               'License': "The license goes here.",
+               'Name': "The dataset name goes here.",
+               'ReferencesAndLinks': ["References and links for this dataset go here."]})
 
     for item in metadata['metadata']['datasetDescription']: 
         meta_dict[item] = metadata['metadata']['datasetDescription'][item]

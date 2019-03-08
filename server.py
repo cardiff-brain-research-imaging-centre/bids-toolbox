@@ -28,16 +28,31 @@ def createBidsHandler():
 
     ## Read body message and check format
     if request.is_json == False:
-        raise RuntimeError("Incorrect body message -- not a JSON file")
+        resp_data['status'] = 'error'
+        resp_data['errorMessage'] = 'Incorrect body message: not a JSON file'
+
+        resp_js = json.dumps(resp_data)
+        resp = Response(resp_js, status=200, mimetype='application/json')	 
+        return resp
 
     data = request.get_json()
+    json_missing_data = False #To flag is there is some information missing in JSON message
 
     if 'scans' not in data:
-        raise RuntimeError("Incorrect body message -- Scans key not found")
+        json_missing_data = True
+        resp_data['errorMessage'] = 'Incorrect JSON message: Scans key not found'
     if 'metadata' not in data:
-        raise RuntimeError("Incorrect body message -- Metadata key not found")
+        json_missing_data = True
+        resp_data['errorMessage'] = 'Incorrect JSON message: Metadata key not found'
     if 'output' not in data:
-        raise RuntimeError("Incorrect body message -- Output key not found")
+        json_missing_data = True
+        resp_data['errorMessage'] = 'Incorrect JSON message: Output key not found'
+
+    if json_missing_data:
+        resp_data['status'] = 'error'
+        resp_js = json.dumps(resp_data)
+        resp = Response(resp_js, status=200, mimetype='application/json')
+        return resp
 
     ## Create temporary working folder 
     parent_folder = '/tmp/bids_temp_'+str(time.time())
@@ -146,19 +161,35 @@ def createBidsHandler():
 def updateBidsHandler():
 
     start_time = timer()
+    resp_data = {} #Object to return status at the end of function
 
     ## Read body message and check format
     if request.is_json == False:
-        raise RuntimeError("Incorrect body message -- not a JSON file")
+        resp_data['status'] = 'error'
+        resp_data['errorMessage'] = 'Incorrect body message: not a JSON file'
+
+        resp_js = json.dumps(resp_data)
+        resp = Response(resp_js, status=200, mimetype='application/json')	 
+        return resp
 
     data = request.get_json()
+    json_missing_data = False #To flag is there is some information missing in JSON message
 
     if 'scans' not in data:
-        raise RuntimeError("Incorrect body message -- Scans key not found")
+        json_missing_data = True
+        resp_data['errorMessage'] = 'Incorrect JSON message: Scans key not found'
     if 'metadata' not in data:
-        raise RuntimeError("Incorrect body message -- Metadata key not found")
+        json_missing_data = True
+        resp_data['errorMessage'] = 'Incorrect JSON message: Metadata key not found'
     if 'output' not in data:
-        raise RuntimeError("Incorrect body message -- Output key not found")
+        json_missing_data = True
+        resp_data['errorMessage'] = 'Incorrect JSON message: Output key not found'
+
+    if json_missing_data:
+        resp_data['status'] = 'error'
+        resp_js = json.dumps(resp_data)
+        resp = Response(resp_js, status=200, mimetype='application/json')
+        return resp
 
     ## Create temporary working folder 
     parent_folder = '/tmp/bids_temp_'+str(time.time())
