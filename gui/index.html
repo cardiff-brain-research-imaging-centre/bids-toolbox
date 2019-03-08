@@ -64,8 +64,8 @@
 		var newRow = $("<tr>");
 		var cols = "";
 
-		cols += '<td><input type="number" size="5" min="1" name="dicom_sub_create'+dicom_c_counter+'" class="input-sm form-control" /></td>';
-		cols += '<td><input type="number" size="5" min="1" name="dicom_ses_create'+dicom_c_counter+'"  class="input-sm form-control"/></td>';
+		cols += '<td><input type="number" size="5" min="1" name="dicom_sub_create'+dicom_c_counter+'" class="input-sm form-control" style="text-align:right;"/></td>';
+		cols += '<td><input type="number" size="5" min="1" name="dicom_ses_create'+dicom_c_counter+'" class="input-sm form-control" style="text-align:right;"/></td>';
 		cols += '<td><input type="text" name="dicom_path_create'+dicom_c_counter+'" class="input-sm form-control"/></td>';
 		cols += '<td><input type="button" class="ibtnDel btn btn-md btn-danger "  value="Delete"></td>';
 
@@ -83,8 +83,8 @@
 		var newRow = $("<tr>");
 		var cols = "";
 
-		cols += '<td><input type="number" size="5" min="1" name="dicom_sub_update'+dicom_u_counter+'" class="input-sm form-control" /></td>';
-		cols += '<td><input type="number" size="5" min="1" name="dicom_ses_update'+dicom_u_counter+'"  class="input-sm form-control"/></td>';
+		cols += '<td><input type="number" size="5" min="1" name="dicom_sub_update'+dicom_u_counter+'" class="input-sm form-control" style="text-align:right;"/></td>';
+		cols += '<td><input type="number" size="5" min="1" name="dicom_ses_update'+dicom_u_counter+'" class="input-sm form-control" style="text-align:right;"/></td>';
 		cols += '<td><input type="text" name="dicom_path_update'+dicom_u_counter+'" class="input-sm form-control"/></td>';
 		cols += '<td><input type="button" class="ibtnDel btn btn-md btn-danger "  value="Delete"></td>';
 
@@ -356,19 +356,20 @@
 	<div class="container">
 	    <table id="dicom_create_table" class=" table order-list">
 	    <thead>
-		<tr>
-		    <td>Subject ID</td>
-		    <td>Session ID</td>
-		    <td>Folder containing DICOM files</td>
+		<tr >
+		    <th style="width: 15%">Subject ID</th>
+		    <th style="width: 15%">Session ID</th>
+		    <th style="width: 60%">Folder containing DICOM files</th>
+		    <th style="width: 10%"> </th>
 		</tr>
 	    </thead>
 	    <tbody>
-		<tr>
+		<tr >
 		    <td>
-			<input type="number" size="5" min="1" value="1" name="dicom_sub_create" class="input-sm form-control" />
+			<input type="number" size="5" min="1" value="1" name="dicom_sub_create" class="input-smi form-control" style="text-align:right;"/>
 		    </td>
 		    <td>
-			<input type="number" size="5" min="1" value="1" name="dicom_ses_create"  class="input-sm form-control"/>
+			<input type="number" size="5" min="1" value="1" name="dicom_ses_create" class="input-sm form-control" style="text-align:right;"/>
 		    </td>
 		    <td>
 			<input type="text" name="dicom_path_create"  class="input-sm form-control"/>
@@ -401,8 +402,9 @@
 	    <table id="desc_create_table" class=" table order-list">
 	    <thead>
 		<tr>
-		    <td>Key</td>
-		    <td>Value</td>
+		    <th style="width: 30%">Key</th>
+		    <th style="width: 60%">Value</th>
+		    <th style="width: 10%"></th>
 		</tr>
 	    </thead>
 	    <tbody>
@@ -436,9 +438,10 @@
 	    <table id="scan_types_table" class=" table order-list">
 	    <thead>
 		<tr>
-		    <td>Name</td>
-		    <td>Scan modality</td>
-		    <td>Scan type</td>
+		    <th style="width: 30%" >Name</td>
+		    <th style="width: 30%" >Scan modality</td>
+		    <th style="width: 30%" >Scan type</td>
+		    <th style="width: 10%" ></td>
 		</tr>
 	    </thead>
 	    <tbody>
@@ -501,18 +504,19 @@
 	    <table id="dicom_update_table" class=" table order-list">
 	    <thead>
 		<tr>
-		    <td>Subject ID</td>
-		    <td>Session ID</td>
-		    <td>Folder containing DICOM files</td>
+		    <th style="width: 15%">Subject ID</th>
+		    <th style="width: 15%">Session ID</th>
+		    <th style="width: 60%">Folder containing DICOM files</th>
+		    <th style="width: 10%"> </th>
 		</tr>
 	    </thead>
 	    <tbody>
 		<tr>
 		    <td>
-			<input type="number" size="5" min="1" value="1" name="dicom_sub_update" class="input-sm form-control" />
+			<input type="number" size="5" min="1" value="1" name="dicom_sub_update" class="input-sm form-control" style="text-align:right;"/>
 		    </td>
 		    <td>
-			<input type="number" size="5" min="1" value="1" name="dicom_ses_update"  class="input-sm form-control"/>
+			<input type="number" size="5" min="1" value="1" name="dicom_ses_update"  class="input-sm form-control" style="text-align:right;"/>
 		    </td>
 		    <td>
 			<input type="text" name="dicom_path_update"  class="input-sm form-control"/>
@@ -540,8 +544,9 @@
 	    <table id="desc_update_table" class=" table order-list">
 	    <thead>
 		<tr>
-		    <td>Key</td>
-		    <td>Value</td>
+		    <th style="width: 30%">Key</th>
+		    <th style="width: 60%">Value</th>
+		    <th style="width: 10%"></th>
 		</tr>
 	    </thead>
 	    <tbody>
