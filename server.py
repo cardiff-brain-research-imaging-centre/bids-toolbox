@@ -24,7 +24,7 @@ def createBidsHandler():
 
     start_time = timer()
     dcm2niix_time = 0.0
-	resp_data = {} #Object to return status at the end of function
+    resp_data = {} #Object to return status at the end of function
 
     ## Read body message and check format
     if request.is_json == False:
@@ -88,20 +88,20 @@ def createBidsHandler():
                 any_unclassified = True
                 unclassified_list.append(key)
             else:
-        	bidskit_config[key][0] = scan_type['type']
+                bidskit_config[key][0] = scan_type['type']
                 bidskit_config[key][1] = scan_type['modality']
 
     #This if triggers is there has been any scan key with no user provided type/modality and 
     #and for which the Toolbox heuristic has not been able to classify. This stops the conversion.
     if any_unclassified:
         resp_data['status'] = 'error'
-	resp_data['errorMessage'] = 'Scan modality not provided and not detected for the following tags: '
-	resp_data['errorMessage'] += str(unclassified_list)
+        resp_data['errorMessage'] = 'Scan modality not provided and not detected for the following tags: '
+        resp_data['errorMessage'] += str(unclassified_list)
 
-	resp_js = json.dumps(resp_data)
-	resp = Response(resp_js, status=200, mimetype='application/json')
+        resp_js = json.dumps(resp_data)
+        resp = Response(resp_js, status=200, mimetype='application/json')
 	 
-	return resp
+        return resp
 
     with open(parent_folder+'/derivatives/conversion/Protocol_Translator.json', "w") as f:
         json.dump(bidskit_config, f)

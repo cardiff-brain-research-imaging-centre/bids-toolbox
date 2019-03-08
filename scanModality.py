@@ -32,49 +32,49 @@ def inferScanModality(tag, parent_folder):
             TR = sidecar_data['RepetitionTime']
 					
             if 'GR' in SS:
-            		if TE < 30:
-					if FA == 90:
-						if TR < 800:
-							scan['type'] = 'anat'
-							scan['modality'] = 'T1w'                       
-						else:
-							scan['type'] = 'anat'
-							scan['modality'] = 'PD'
-					elif FA >= 5 and FA <= 20:
-						scan['type'] = 'anat'
-						scan['modality'] = 'T1w'   
-					else:
-						scan['type'] = 'anat'
-						scan['modality'] = 'T2star'     
-				else:
-						scan['modality'] = 'unclassified'     
+                if TE < 30:
+                    if FA == 90:
+                        if TR < 800:
+                            scan['type'] = 'anat'
+                            scan['modality'] = 'T1w'                       
+                        else:
+                            scan['type'] = 'anat'
+                            scan['modality'] = 'PD'
+                    elif FA >= 5 and FA <= 20:
+                        scan['type'] = 'anat'
+                        scan['modality'] = 'T1w'   
+                    else:
+                        scan['type'] = 'anat'
+                        scan['modality'] = 'T2star'     
+                else:
+                    scan['modality'] = 'unclassified'     
 
-			elif 'EP' in SS:
-				if TE >= 30 and TE <= 60:
-					scan['type'] = 'func'
-					scan['modality'] = 'BOLD'
-				else:
-					scan['modality'] = 'unclassified'     
+            elif 'EP' in SS:
+                if TE >= 30 and TE <= 60:
+                    scan['type'] = 'func'
+                    scan['modality'] = 'BOLD'
+                else:
+                    scan['modality'] = 'unclassified'     
 
-			elif 'SE' in SS:
-				if 'IR' in SS:
-					if 'InversionTime' in sidecar_data:
-						TI = sidecar_data['InversionTime']				
-						if TI < 1:
-							scan['type'] = 'IR'
-							scan['modality'] = 'STIR'   
-						else:
-		                    scan['type'] = 'anat'
-        		            scan['modality'] = 'FLAIR'   		
-					else: 
-						scan['modality'] = 'unclassified'     
-				else:
-					if TE >= 60:
-						scan['type'] = 'anat'
-						scan['modality'] = 'T2w'   
-					else:
-						scan['modality'] = 'unclassified'             
-        	else: # If not GR, EP or SE: unclassified
-            	scan['modality'] = 'unclassified' 
+            elif 'SE' in SS:
+                if 'IR' in SS:
+                    if 'InversionTime' in sidecar_data:
+                        TI = sidecar_data['InversionTime']				
+                        if TI < 1:
+                            scan['type'] = 'IR'
+                            scan['modality'] = 'STIR'   
+                        else:
+                            scan['type'] = 'anat'
+                            scan['modality'] = 'FLAIR'   		
+                    else: 
+                        scan['modality'] = 'unclassified'     
+                else:
+                    if TE >= 60:
+                        scan['type'] = 'anat'
+                        scan['modality'] = 'T2w'   
+                    else:
+                        scan['modality'] = 'unclassified'             
+            else: # If not GR, EP or SE: unclassified
+                scan['modality'] = 'unclassified' 
 
     return scan
