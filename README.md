@@ -8,7 +8,7 @@ Flask, PyDicom and Numpy: can be installed using pip as: `pip install flask flas
 
 Dcm2Niix: install latest version from official repository https://github.com/rordenlab/dcm2niix
 
-This software uses parts of [bidskit](https://github.com/jmtyszka/bidskit), but it doesn't need to be installed.
+This software uses parts of [bidskit](https://github.com/jmtyszka/bidskit).
 
 ### Running the service
 
@@ -41,24 +41,17 @@ These two methods receive arguments in JSON format:
 	"metadata": {
 		"modalities": [{
 				"tag": "CHARMED",
-				"type": "dwi",
-				"modality": "dwi"
+				"modality": "dwi",
+				"type": "dwi"
 			},
 			{
 				"tag": "t1_mprage",
-				"type": "anat",
-				"modality": "T1w"
+				"modality": "anat",
+				"type": "T1w"
 			}
 		],
 		"datasetDescription": {
 			"item": "Item to be added to dataset_description.json"
-		}
-	},
-	"pipeline": {
-		"run": "yes",
-		"config": {
-			"param1": 0.55,
-			"param2": 6.12
 		}
 	}
 }
