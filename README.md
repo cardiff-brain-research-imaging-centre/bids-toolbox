@@ -1,6 +1,8 @@
 # The BIDS Toolbox
 
-This repository holds the code for The BIDS Toolbox, a web service for the creation and manipulation of BIDS datasets. It has been developed at Cardiff University Brain Research Imaging Centre (CUBRIC) in collaboration with Cardiff University Data Innovation Research Institute (DIRI) and funded by the Science and Technology Facilities Council (STFC) under the MiDac project.
+This repository holds the code for The BIDS Toolbox, a web service for the creation and manipulation of BIDS datasets. It has been developed at the Cardiff University Brain Research Imaging Centre (CUBRIC) in collaboration with Cardiff University Data Innovation Research Institute (DIRI).
+
+WARNING: This project is a prototype under development.
 
 ### Software pre-requisites
 
