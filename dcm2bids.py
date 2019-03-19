@@ -101,7 +101,6 @@ def bidskit(indir, oudir, metadata, config):
     bids_deriv_dir = os.path.join(bids_root_dir, 'derivatives', 'conversion')
     work_dir = os.path.join(bids_root_dir, 'work', 'conversion')
 
-
     # Safely create the BIDS working, source and derivatives directories
     safe_mkdir(work_dir)
     safe_mkdir(bids_src_dir)

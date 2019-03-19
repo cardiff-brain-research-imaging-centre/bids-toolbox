@@ -224,6 +224,7 @@
 				if (status == 'success')
 				{
 					$("#waitCreationLabel").hide();
+                    $("a").attr("href","download/"+response['zipfile'])
 					$("#successCreationLabel").show();
 				}
 				else
@@ -234,7 +235,7 @@
 				}
 			},
 			complete: function(data){
-				alert("Complete function");
+				//alert("Complete function");
 			}
 		})		
 
@@ -642,7 +643,8 @@
 	 Please, wait while your BIDS dataset is being created...<br>
 	 </p>
          <p id="successCreationLabel" class="lead">
-	 Creation finished. Your dataset is now available in the specified output folder.<br>
+	 Creation finished. <a href="download/BIDS_Probatxoa.zip">Click here to get dataset.</a><br>
+	 </p>
 	 </p>
          <p id="waitUpdateLabel" class="lead">
 	 Please, wait while your BIDS dataset is being updated...<br>

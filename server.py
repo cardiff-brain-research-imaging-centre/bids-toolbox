@@ -7,7 +7,9 @@ from flask import Response
 from shutil import copytree
 from shutil import copyfile
 from shutil import rmtree
+from shutil import make_archive
 from distutils.dir_util import copy_tree
+
 import os
 import json
 import time
@@ -173,7 +175,7 @@ def createUploadHandler():
         resp = Response(resp_js, status=200, mimetype='application/json')
         return resp
 
-    metadata = json.loads(request.values['metadata_json']) #Get JSON metadata object
+    data = json.loads(request.values['metadata_json']) #Get JSON metadata object
 
     ## Create temporary working folder 
     parent_folder = '/tmp/bids_temp_'+str(time.time())
@@ -187,7 +189,7 @@ def createUploadHandler():
 
     os.mkdir(parent_folder+'/dicom')
     print('Copying all the stuff into: '+parent_folder)
-
+    
     for f in request.files:
         #The file object is named 'file_X_Y_Z'
         sub = f.split("_")[1] # where X is the subject ID
@@ -200,10 +202,10 @@ def createUploadHandler():
 
         fobj = request.files[f]
         filename = fobj.filename
-        fobj.save(os.path.join(parent_folder+'/dicom/'+sub+'/'+ses ,filename))
+        fobj.save(os.path.join(parent_folder+'/dicom/'+sub+'/'+ses ,filename)) 
 
     ## Run bidskit 1st pass 
-    t = bidskit(parent_folder+'/dicom', parent_folder+'/output', metadata, config)
+    t = bidskit(parent_folder+'/dicom', parent_folder+'/output', data, config)
     dcm2niix_time += t
 
     ## Fill the bidskit configfile
@@ -264,19 +266,18 @@ def createUploadHandler():
     copyfile(parent_folder+'/derivatives/conversion/Protocol_Translator.json', parent_folder+'/output/.Protocol_Translator.json')
 
     #Zip output folder 
-    zipf = zipfile.ZipFile('download/BIDS_dataset.zip', 'w')
-    for root, dirs, files in os.walk(parent_folder+'/output'):
-        for file in files:
-            zipf.write(os.path.join(root, file))
-    zipf.close()
-
-    #Try alternative to zipfile
-    #shutil.make_archive('download/BIDS_dataset.zip', 'zip', parent_folder+'/output')
+    dataset_name = ''
+    if 'Name' in data['metadata']['datasetDescription']:
+        dataset_name = data['metadata']['datasetDescription']['Name']
+    else:
+        dataset_name = time.strftime("%Y-%m-%d_%H:%M:%S")
+    make_archive('download/BIDS_'+dataset_name, 'zip', parent_folder+'/output')
 
     ## Remove temporary working directory
     rmtree(parent_folder)
  
     resp_data['status'] = 'success'
+    resp_data['zipfile'] = 'BIDS_'+dataset_name+'.zip' 
     resp_js = json.dumps(resp_data)
     resp = Response(resp_js, status=200, mimetype='application/json')
  
@@ -438,7 +439,7 @@ def send_gui_files(path):
 
 @app.route('/download/<path:path>')
 def send_zip_files(path):
-    return send_from_directory('download', path, as_attachment=True, attachment_filename='dataset.json')
+    return send_from_directory('download', path, as_attachment=True)
 
 
 if __name__ == '__main__':
