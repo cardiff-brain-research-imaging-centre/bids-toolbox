@@ -66,7 +66,7 @@
 
 		cols += '<td><input type="number" size="5" min="1" name="dicom_sub_create'+dicom_c_counter+'" class="input-sm form-control" style="text-align:right;"/></td>';
 		cols += '<td><input type="number" size="5" min="1" name="dicom_ses_create'+dicom_c_counter+'" class="input-sm form-control" style="text-align:right;"/></td>';
-		cols += '<td><input type="text" name="dicom_path_create'+dicom_c_counter+'" class="input-sm form-control"/></td>';
+		cols += '<td><input type="file" name="dicom_create_upload'+dicom_c_counter+'" multiple=""></td>';
 		cols += '<td><input type="button" class="ibtnDel btn btn-md btn-danger "  value="Delete"></td>';
 
 		newRow.append(cols);
@@ -155,8 +155,9 @@
 		desc_u_counter -= 1
 	    });
 
-            $("#createButton").click(function(){
+        $("#createButton").click(function(){
 	
+        formdata = new FormData();
 		var message = new Object();
 		message["scans"] = {}
 		message["metadata"] = {}
@@ -164,17 +165,31 @@
 		message["metadata"]["datasetDescription"] = {}
 
 		$("#dicom_create_table > tbody > tr").each(function(){
+            var total; //Variable to keep the total count of files for subject/session
+
 			var sub = $(this).find('input[name^="dicom_sub_create"]').val();
 			if((sub in message["scans"]) == false)
 			{
 				message["scans"][sub] = {};
 			}
 			var ses = $(this).find('input[name^="dicom_ses_create"]').val();
-			var path = $(this).find('input[name^="dicom_path_create"]').val();
-			message["scans"][sub][ses] = path;
-		});
+			if((ses in message["scans"][sub]) == false)
+			{
+				total = 0;
+			}
+            else
+            {
+                total = message["scans"][sub][ses];
+            }
+            var len = $(this).find('input[name^="dicom_create_upload"]').prop('files').length;
+            var i,j;
 
-		message["output"] = $("#output_folder_create").val();
+            for(i = 0; i < len; i++){
+                j = total + i;
+                formdata.append("file_"+sub+"_"+ses+"_"+j, $(this).find('input[name^="dicom_create_upload"]').prop('files')[i]);
+            }
+			message["scans"][sub][ses] = total + len;
+		});
 
 		$("#desc_create_table > tbody > tr").each(function(){
 			var key = $(this).find('input[name^="desc_key"]').val();
@@ -191,17 +206,19 @@
 			message["metadata"]["modalities"].push({"tag":sKey, "type":sType, "modality":sMod});
 		});	
 		
-	    	$("#mainHeader").hide();
+        formdata.append("metadata_json", JSON.stringify(message))
+
+	    $("#mainHeader").hide();
 		$("#createForm").hide();
 		$("#updateForm").hide();
 		$("#waitCreationLabel").show();
 
 		$.ajax({
-			url:"/createBids",
+			url:"/createUpload",
 			type:"POST",
-			data:JSON.stringify(message),
-			contentType:"application/json",
-			dataType:"json",
+			data:formdata,
+            processData: false,
+			contentType: false,
 			success: function(response){
 				var status = response['status'];
 				if (status == 'success')
@@ -216,9 +233,8 @@
 					$("#successCreationLabel").show();
 				}
 			},
-			complete: function(){
-				//alert("Complete function");
-
+			complete: function(data){
+				alert("Complete function");
 			}
 		})		
 
@@ -271,6 +287,46 @@
 				$("#successUpdateLabel").show();
 			}
 		})		
+            });
+
+
+
+            $("#uploadButton").click(function(){
+
+                formdata = new FormData();
+                
+                var i;
+                var len = $("#upload1").prop('files').length;
+
+                for(i = 0; i < len; i++){
+                    formdata.append("file_s1"+i, $("#upload1").prop('files')[i]);
+                }
+
+                len = $("#upload2").prop('files').length;
+
+                for(i = 0; i < len; i++){
+                    formdata.append("file_s2"+i, $("#upload2").prop('files')[i]);
+                }
+                    
+                var metadata = {}
+                metadata['LEL'] = 'True'
+                formdata.append("metadata_json",metadata)
+           
+                $.ajax({
+                    url:"/createUpload",
+                    type:"POST",
+                    data: formdata,
+                    processData: false,
+                    contentType: false,
+                    successs: function(result){
+                        alert("Success");
+                    },
+                	complete: function(data){
+                        alert("Complete");
+			        }
+                });
+
+
             });
 
 
@@ -351,7 +407,7 @@
 	<form id="createForm">
 	A BIDS dataset is created from a set of DICOM files and some additional descriptive metadata. Follow the steps below to create your dataset.<br><br>
 
-	    <p style="text-align:justify"><b>First:</b> Type the full path to the folders containing the DICOM files for each session. This step is <u>obligatory</u>:</p>
+	    <p style="text-align:justify"><b>First:</b> Select the DICOM files for each subject and session. This step is <u>obligatory</u>:</p>
 
 	<div class="container">
 	    <table id="dicom_create_table" class=" table order-list">
@@ -359,7 +415,7 @@
 		<tr >
 		    <th style="width: 15%">Subject ID</th>
 		    <th style="width: 15%">Session ID</th>
-		    <th style="width: 60%">Folder containing DICOM files</th>
+		    <th style="width: 60%">DICOM files</th>
 		    <th style="width: 10%"> </th>
 		</tr>
 	    </thead>
@@ -372,7 +428,7 @@
 			<input type="number" size="5" min="1" value="1" name="dicom_ses_create" class="input-sm form-control" style="text-align:right;"/>
 		    </td>
 		    <td>
-			<input type="text" name="dicom_path_create"  class="input-sm form-control"/>
+            <input type="file" name="dicom_create_upload" multiple="">
 		    </td>
 
 		    <td><a class="deleteRow"></a>
@@ -382,7 +438,7 @@
 	    <tfoot>
 		<tr>
 		    <td colspan="5" style="text-align: left;">
-			<input type="button" class="btn btn-primary" style="width: 25%"  id="dicom_create_addrow" value="Add subject/session" />
+			<input type="button" class="btn btn-primary" style="width: 25%"  id="dicom_create_addrow" value="Add subject/session files" />
 		    </td>
 		</tr>
 		<tr>
@@ -391,12 +447,13 @@
 	</table>
 	</div>
 
-	  <div class="form-group">
-	    <p style="text-align:justify" ><b>Second:</b> Type the full path to the folder where you want to store the BIDS dataset. This step is <u>obligatory</u>:</p>
-	    <input type="text" id="output_folder_create" class="input-sm form-control" required/>
-	  </div>
+    <!--
+    <input type="file" id="upload2" name="file[]" multiple="">
+	<button type="button" id="uploadButton" class="btn btn-lg btn-primary">Upload files</button>
+    -->
+
     <br>
-	<p style="text-align:justify"><b>Third:</b> BIDS datasets include a mandatory <i>dataset_description.json</i> file with descriptive metadata like the distribution license or usage information, arranged in the form of key-value pairs. Add below the key-value pairs that you would like to add to your your <i>dataset_description.json</i> file. This step is <u>optional</u>.</p>
+	<p style="text-align:justify"><b>Second:</b> BIDS datasets include a mandatory <i>dataset_description.json</i> file with descriptive metadata like the distribution license or usage information, arranged in the form of key-value pairs. Add below the key-value pairs that you would like to add to your your <i>dataset_description.json</i> file. This step is <u>optional</u>.</p>
 
 	<div class="container">
 	    <table id="desc_create_table" class=" table order-list">
@@ -432,7 +489,7 @@
 	</table>
 	</div>
 
-	<p style="text-align:justify"><b>Fourth:</b> During the creation of the BIDS dataset, the Toolbox will create a set of Nifti files based on the DICOM files you provide. However, the DICOM files don't declare explicitly the type of acquisition (whether the scan is structural, diffusion,... ) and knowing so is mandatory for the creation of the dataset. The Toolbox includes a heuristic to infer the type of scan based on several parameters of the DICOM headers, but it is not 100% accurate. If you know these values, you can define the type of scan for each of the series in the following fields. This step is <u>optional</u>.</p>
+	<p style="text-align:justify"><b>Third:</b> During the creation of the BIDS dataset, the Toolbox will create a set of Nifti files based on the DICOM files you provide. However, the DICOM files don't declare explicitly the type of acquisition (whether the scan is structural, diffusion,... ) and knowing so is mandatory for the creation of the dataset. The Toolbox includes a heuristic to infer the type of scan based on several parameters of the DICOM headers, but it is not 100% accurate. If you know these values, you can define the type of scan for each of the series in the following fields. This step is <u>optional</u>.</p>
 
 	<div class="container">
 	    <table id="scan_types_table" class=" table order-list">
