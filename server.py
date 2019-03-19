@@ -8,6 +8,7 @@ from shutil import copytree
 from shutil import copyfile
 from shutil import rmtree
 from shutil import make_archive
+from shutil import unpack_archive
 from distutils.dir_util import copy_tree
 
 import os
@@ -175,7 +176,8 @@ def createUploadHandler():
         resp = Response(resp_js, status=200, mimetype='application/json')
         return resp
 
-    data = json.loads(request.values['metadata_json']) #Get JSON metadata object
+    #Load JSON with metadata from POST data
+    data = json.loads(request.values['metadata_json']) 
 
     ## Create temporary working folder 
     parent_folder = '/tmp/bids_temp_'+str(time.time())
@@ -391,6 +393,111 @@ def updateBidsHandler():
     #Send successful conversion message
     resp_data['status'] = 'success'
 
+    resp_js = json.dumps(resp_data)
+    resp = Response(resp_js, status=200, mimetype='application/json')
+ 
+    return resp
+
+
+@app.route('/updateUpload', methods = ['POST'])
+def updateUploadHandler():
+
+    start_time = timer()
+    resp_data = {} #Object to return status at the end of function
+
+    ## Create temporary working folder 
+    parent_folder = '/tmp/bids_temp_'+str(time.time())
+    try:
+        os.mkdir(parent_folder)
+    except FileExistsError:
+        raise RuntimeError("BIDS Toolbox error -- Directory ",parent_folder, " already exists")
+
+    print("Now in parent folder: "+parent_folder)
+
+    ## Get dataset from POST data and unzip
+    fobj = request.files['dataset_zip']
+    fobj.save(os.path.join(parent_folder, 'original.zip')) 
+    unpack_archive(os.path.join(parent_folder, 'original.zip'), parent_folder+'/output' , 'zip')
+
+    ## Check if dataset contains hidden toolbox file
+    if not (os.path.exists(parent_folder+'/output/.dataset.toolbox')):
+        resp_data['status'] = 'error'  
+        resp_data['errorMessage'] = 'Malformed BIDS dataset in zipfile: .dataset.toolbox file not found'
+        resp_js = json.dumps(resp_data)
+        resp = Response(resp_js, status=200, mimetype='application/json')
+        return resp
+
+    #Load JSON with metadata from POST data
+    data = json.loads(request.values['metadata_json']) 
+
+    #Populate working folder
+    os.mkdir(parent_folder+'/derivatives')
+    os.mkdir(parent_folder+'/derivatives/conversion')
+    copyfile(parent_folder+'/output/.Protocol_Translator.json', parent_folder+'/derivatives/conversion/Protocol_Translator.json')
+
+    os.mkdir(parent_folder+'/work')
+    os.mkdir(parent_folder+'/work/conversion')
+    os.mkdir(parent_folder+'/dicom')
+
+    with open(parent_folder+'/output/.dataset.toolbox', 'r') as f:
+        dataset_props = json.load(f)
+
+    for f in request.files:
+        print("Processing file: ",f)
+        if 'file' in f: #Avoid 'dataset_zip' file
+            #The file object is named 'file_X_Y_Z'
+            sub = f.split("_")[1] # where X is the subject ID
+            ses = f.split("_")[2] # and Y is the session ID
+            
+            if not os.path.isdir(parent_folder+'/dicom/'+sub):
+                os.mkdir(parent_folder+'/dicom/'+sub)
+            if not os.path.isdir(parent_folder+'/dicom/'+sub+'/'+ses):
+                os.mkdir(parent_folder+'/dicom/'+sub+'/'+ses)
+
+            fobj = request.files[f]
+            filename = fobj.filename
+            fobj.save(os.path.join(parent_folder+'/dicom/'+sub+'/'+ses ,filename)) 
+
+    ## Run bidskit 2nd pass
+    dcm2niix_time = bidskit(parent_folder+'/dicom', parent_folder+'/output', data, config)
+
+    # Check for existence and add new items to add to dataset_description
+    if len(data['metadata']['datasetDescription']) > 0:
+        with open(parent_folder+'/output/dataset_description.json', 'r') as f:
+            dataset_props = json.load(f)
+
+        for item in data['metadata']['datasetDescription']:
+            dataset_props[item] = data['metadata']['datasetDescription'][item]
+
+        with open(parent_folder+'/output/dataset_description.json', "w") as f:
+            json.dump(dataset_props, f)
+
+    ## Store metadata for BIDS toolbox in hidden file
+    with open(parent_folder+'/.dataset.toolbox', "w") as f:
+        json.dump(data, f)
+
+    #Zip output folder 
+    dataset_name = ''
+    if 'Name' in data['metadata']['datasetDescription']:
+        dataset_name = data['metadata']['datasetDescription']['Name']
+    else:
+        dataset_name = time.strftime("%Y-%m-%d_%H:%M:%S")
+
+    if os.path.exists('download/BIDS_'+dataset_name+'.zip'):
+        os.remove('download/BIDS_'+dataset_name+'.zip')
+
+    make_archive('download/BIDS_'+dataset_name, 'zip', parent_folder+'/output')
+
+    # Remove temporary working directory
+    rmtree(parent_folder)
+
+    end_time = timer()
+
+    print('updateBIDS finished - dcm2niix time: '+str(round(dcm2niix_time,3))+' s, Total time: '+str(round(end_time - start_time,3))+' s')
+    
+    # Respond with OK and name of dataset
+    resp_data['status'] = 'success'
+    resp_data['zipfile'] = 'BIDS_'+dataset_name+'.zip' 
     resp_js = json.dumps(resp_data)
     resp = Response(resp_js, status=200, mimetype='application/json')
  

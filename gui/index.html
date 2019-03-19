@@ -85,7 +85,7 @@
 
 		cols += '<td><input type="number" size="5" min="1" name="dicom_sub_update'+dicom_u_counter+'" class="input-sm form-control" style="text-align:right;"/></td>';
 		cols += '<td><input type="number" size="5" min="1" name="dicom_ses_update'+dicom_u_counter+'" class="input-sm form-control" style="text-align:right;"/></td>';
-		cols += '<td><input type="text" name="dicom_path_update'+dicom_u_counter+'" class="input-sm form-control"/></td>';
+		cols += '<td><input type="file" name="dicom_update_upload'+dicom_u_counter+'" multiple="" /></td>';
 		cols += '<td><input type="button" class="ibtnDel btn btn-md btn-danger "  value="Delete"></td>';
 
 		newRow.append(cols);
@@ -241,25 +241,39 @@
 
             });
 
-            $("#updateButton").click(function(){
+        $("#updateButton").click(function(){
 
+        formdata = new FormData();
 		var message = new Object();
-		message["scans"] = {}
-		message["metadata"] = {}
-		message["metadata"]["datasetDescription"] = {}
+		message["scans"] = {};
+		message["metadata"] = {};
+		message["metadata"]["datasetDescription"] = {};
 
 		$("#dicom_update_table > tbody > tr").each(function(){
+            var total; //Variable to keep the total count of files for subject/session
 			var sub = $(this).find('input[name^="dicom_sub_update"]').val();
 			if((sub in message["scans"]) == false)
 			{
 				message["scans"][sub] = {};
 			}
 			var ses = $(this).find('input[name^="dicom_ses_update"]').val();
-			var path = $(this).find('input[name^="dicom_path_update"]').val();
-			message["scans"][sub][ses] = path;
-		});
+			if((ses in message["scans"][sub]) == false)
+			{
+				total = 0;
+			}
+            else
+            {
+                total = message["scans"][sub][ses];
+            }
+            var len = $(this).find('input[name^="dicom_update_upload"]').prop('files').length;
+            var i,j;
 
-		message["output"] = $("#output_folder_update").val();
+            for(i = 0; i < len; i++){
+                j = total + i;
+                formdata.append("file_"+sub+"_"+ses+"_"+j, $(this).find('input[name^="dicom_update_upload"]').prop('files')[i]);
+            }
+			message["scans"][sub][ses] = total + len;
+		});
 
 		$("#desc_update_table > tbody > tr").each(function(){
 			var key = $(this).find('input[name^="desc_key"]').val();
@@ -267,32 +281,43 @@
 	
 			message["metadata"]["datasetDescription"][key] = kvalue;
 		});	
-		
-	    	$("#mainHeader").hide();
+	
+        formdata.append("metadata_json", JSON.stringify(message))
+        formdata.append("dataset_zip", $("#dataset_zipfile")[0].files[0]);
+	
+	    $("#mainHeader").hide();
 		$("#createForm").hide();
 		$("#updateForm").hide();
 		$("#waitUpdateLabel").show();
 
 		$.ajax({
-			url:"/updateBids",
+			url:"/updateUpload",
 			type:"POST",
-			data:JSON.stringify(message),
-			contentType:"application/json",
-			dataType:"json",
-			//success: function(){
-			//	alert("Conversion finished");
-			//},
-			complete: function(){
-				//alert("Complete function");
-				$("#waitUpdateLabel").hide();
-				$("#successUpdateLabel").show();
+			data:formdata,
+            processData:false,
+			contentType:false,
+			success: function(response){
+				var status = response['status'];
+				if (status == 'success')
+				{
+					$("#waitUpdateLabel").hide();
+                    $("a").attr("href","download/"+response['zipfile'])
+					$("#successUpdateLabel").show();
+				}
+				else
+				{
+					$("#waitUpdateLabel").hide();
+					$("#successUpdateLabel").text(response['errorMessage']);
+					$("#successUpdateLabel").show();
+				}
+			},
+			complete: function(data){
 			}
 		})		
-            });
+        });
 
 
-
-            $("#uploadButton").click(function(){
+    /*        $("#uploadButton").click(function(){
 
                 formdata = new FormData();
                 
@@ -326,10 +351,8 @@
                         alert("Complete");
 			        }
                 });
-
-
             });
-
+*/
 
             $("#checkDatasetButton").click(function(){
 
@@ -408,7 +431,7 @@
 	<form id="createForm">
 	A BIDS dataset is created from a set of DICOM files and some additional descriptive metadata. Follow the steps below to create your dataset.<br><br>
 
-	    <p style="text-align:justify"><b>First:</b> Select the DICOM files for each subject and session. This step is <u>obligatory</u>:</p>
+	    <p style="text-align:justify"><b>First:</b> Select the DICOM files for each subject and session. This step is <u>required</u>:</p>
 
 	<div class="container">
 	    <table id="dicom_create_table" class=" table order-list">
@@ -448,12 +471,6 @@
 	</table>
 	</div>
 
-    <!--
-    <input type="file" id="upload2" name="file[]" multiple="">
-	<button type="button" id="uploadButton" class="btn btn-lg btn-primary">Upload files</button>
-    -->
-
-    <br>
 	<p style="text-align:justify"><b>Second:</b> BIDS datasets include a mandatory <i>dataset_description.json</i> file with descriptive metadata like the distribution license or usage information, arranged in the form of key-value pairs. Add below the key-value pairs that you would like to add to your your <i>dataset_description.json</i> file. This step is <u>optional</u>.</p>
 
 	<div class="container">
@@ -490,7 +507,7 @@
 	</table>
 	</div>
 
-	<p style="text-align:justify"><b>Third:</b> During the creation of the BIDS dataset, the Toolbox will create a set of Nifti files based on the DICOM files you provide. However, the DICOM files don't declare explicitly the type of acquisition (whether the scan is structural, diffusion,... ) and knowing so is mandatory for the creation of the dataset. The Toolbox includes a heuristic to infer the type of scan based on several parameters of the DICOM headers, but it is not 100% accurate. If you know these values, you can define the type of scan for each of the series in the following fields. This step is <u>optional</u>.</p>
+	<p style="text-align:justify"><b>Third:</b> During the creation of the BIDS dataset, the Toolbox will create a set of NIfTI files based on the DICOM files you provide. However, the DICOM files don't declare explicitly the type of acquisition (whether the scan is structural, diffusion,... ) and knowing so is mandatory for the creation of the dataset. The Toolbox includes a heuristic to infer the type of scan based on several parameters of the DICOM headers, but it is not 100% accurate. If you know these values, you can define the type of scan for each of the series in the following fields. This step is <u>optional</u>.</p>
 
 	<div class="container">
 	    <table id="scan_types_table" class=" table order-list">
@@ -546,17 +563,19 @@
 	This section is used to append brain imaging files or metadata to an existing BIDS dataset created with this toolbox. Follow the steps below to update your dataset: <br><br>	
 
 	  <div class="form-group">
-	    <p style="text-align:justify" ><b>First:</b> Type the full path to the folder of the BIDS dataset to be updated. This step is <u>obligatory</u>:</p>
-	    <input type="text" id="output_folder_update" class="input-sm form-control" required/>
+	    <p style="text-align:justify" ><b>First:</b> Select a zipfile containing the BIDS dataset to be updated. It has to be a dataset created with this toolbox. This step is <u>required</u>:</p>
+	    <input type="file" name="dataset_zipfile" id="dataset_zipfile" />
 	    <br>
+
+<!--
 	    <p style="text-align:justify" >After typing the full path to the dataset, press the <i>Check dataset</i> below to check that the folder is correct.</p>
 	  <button type="button" id="checkDatasetButton"  style="width: 25%"  class="btn btn-primary">Check dataset</button>
 	  <div id="checkResultPadding" style="display: inline-block">      </div>
 	  <div id="checkResult" style="display: inline-block"></div>
-	  <br>
+-->	  <br>
 	  </div>
 
-	    <p style="text-align:justify"><b>Second:</b> Type the full path of the folders containing the DICOM files for sessions to be appended/updated. This step is <u>obligatory</u>:</p>
+	    <p style="text-align:justify"><b>Second:</b> Type the full path of the folders containing the DICOM files for sessions to be appended/updated. This step is <u>optional</u>:</p>
 
 	<div class="container">
 	    <table id="dicom_update_table" class=" table order-list">
@@ -564,7 +583,7 @@
 		<tr>
 		    <th style="width: 15%">Subject ID</th>
 		    <th style="width: 15%">Session ID</th>
-		    <th style="width: 60%">Folder containing DICOM files</th>
+		    <th style="width: 60%">DICOM files</th>
 		    <th style="width: 10%"> </th>
 		</tr>
 	    </thead>
@@ -577,7 +596,7 @@
 			<input type="number" size="5" min="1" value="1" name="dicom_ses_update"  class="input-sm form-control" style="text-align:right;"/>
 		    </td>
 		    <td>
-			<input type="text" name="dicom_path_update"  class="input-sm form-control"/>
+			<input type="file" name="dicom_update_upload" multiple=""/>
 		    </td>
 
 		    <td><a class="deleteRow"></a>
@@ -634,7 +653,8 @@
 
 	That's it. Check that all the values you've entered look good and click the button below to update your dataset. <br><br>
 
-	  <button type="button" id="updateButton" class="btn btn-lg btn-primary" disabled>Update dataset</button>
+	<!--  <button type="button" id="updateButton" class="btn btn-lg btn-primary" disabled>Update dataset</button> -->
+	  <button type="button" id="updateButton" class="btn btn-lg btn-primary">Update dataset</button>
 
 	</form>	
 
@@ -643,14 +663,14 @@
 	 Please, wait while your BIDS dataset is being created...<br>
 	 </p>
          <p id="successCreationLabel" class="lead">
-	 Creation finished. <a href="download/BIDS_Probatxoa.zip">Click here to get dataset.</a><br>
+	 Creation finished. <a href="download/BIDS_dataset.zip">Click here to get dataset.</a><br>
 	 </p>
 	 </p>
          <p id="waitUpdateLabel" class="lead">
 	 Please, wait while your BIDS dataset is being updated...<br>
 	 </p>
          <p id="successUpdateLabel" class="lead">
-	 Update finished. Your dataset is now available in the specified output folder.<br>
+	 Update finished. <a href="download/BIDS_dataset.zip">Click here to get dataset.</a><br>
 	 </p>
 	</div>
 
