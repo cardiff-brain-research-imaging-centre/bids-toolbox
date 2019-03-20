@@ -478,8 +478,8 @@ def updateUploadHandler():
 
     #Zip output folder 
     dataset_name = ''
-    if 'Name' in data['metadata']['datasetDescription']:
-        dataset_name = data['metadata']['datasetDescription']['Name']
+    if 'Name' in dataset_props:
+        dataset_name = dataset_props['Name']
     else:
         dataset_name = time.strftime("%Y-%m-%d_%H:%M:%S")
 
@@ -500,9 +500,6 @@ def updateUploadHandler():
     resp_data['zipfile'] = 'BIDS_'+dataset_name+'.zip' 
     resp_js = json.dumps(resp_data)
     resp = Response(resp_js, status=200, mimetype='application/json')
-
-    #DEBUG
-    print("Name of generated zipfile: ",resp_data['zipfile'])
  
     return resp
 
