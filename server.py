@@ -358,7 +358,7 @@ def updateBidsHandler():
                     copytree(data['scans'][sub][scan], parent_folder+'/dicom/'+sub+'/'+scan)
                 except:
                     raise RuntimeError("BIDS Toolbox error -- Error trying to copy subject "+sub+" scan "+scan+" data in folder "+parent_folder+'/dicom/'+sub+'/'+scan)
-
+    
     ## Run bidskit 2nd pass
     dcm2niix_time = bidskit(parent_folder+'/dicom', parent_folder+'/output', data, config)
 
@@ -418,6 +418,7 @@ def updateUploadHandler():
     fobj = request.files['dataset_zip']
     fobj.save(os.path.join(parent_folder, 'original.zip')) 
     unpack_archive(os.path.join(parent_folder, 'original.zip'), parent_folder+'/output' , 'zip')
+    os.remove(os.path.join(parent_folder, 'original.zip'))
 
     ## Check if dataset contains hidden toolbox file
     if not (os.path.exists(parent_folder+'/output/.dataset.toolbox')):
@@ -443,7 +444,6 @@ def updateUploadHandler():
         dataset_props = json.load(f)
 
     for f in request.files:
-        print("Processing file: ",f)
         if 'file' in f: #Avoid 'dataset_zip' file
             #The file object is named 'file_X_Y_Z'
             sub = f.split("_")[1] # where X is the subject ID
@@ -457,7 +457,7 @@ def updateUploadHandler():
             fobj = request.files[f]
             filename = fobj.filename
             fobj.save(os.path.join(parent_folder+'/dicom/'+sub+'/'+ses ,filename)) 
-
+    
     ## Run bidskit 2nd pass
     dcm2niix_time = bidskit(parent_folder+'/dicom', parent_folder+'/output', data, config)
 
@@ -471,7 +471,7 @@ def updateUploadHandler():
 
         with open(parent_folder+'/output/dataset_description.json', "w") as f:
             json.dump(dataset_props, f)
-
+    
     ## Store metadata for BIDS toolbox in hidden file
     with open(parent_folder+'/.dataset.toolbox', "w") as f:
         json.dump(data, f)
@@ -500,35 +500,9 @@ def updateUploadHandler():
     resp_data['zipfile'] = 'BIDS_'+dataset_name+'.zip' 
     resp_js = json.dumps(resp_data)
     resp = Response(resp_js, status=200, mimetype='application/json')
- 
-    return resp
 
-
-@app.route('/checkDataset', methods = ['POST'])
-def checkDatasetHandler():
-
-    ## Read body message and check format
-    if request.is_json == False:
-        raise RuntimeError("Incorrect body message -- not a JSON file")
-
-    message = request.get_json()
-    folder = message["folder"] #Input folder to be validated 
-    data = {'valid'  : 'no'} #Response message, not valid by default
-
-    #Check if folder and hidden file exist, if so return # of subjects, if not error
-    if(os.path.exists(folder)):
-        if(os.path.exists(folder+'/.dataset.toolbox')):
-            with open(folder+'/.dataset.toolbox', 'r') as f:
-                dataset_props = json.load(f)
-            data['valid'] = 'yes'
-            data['subjects'] = len(dataset_props['scans'])
-        else:
-            data['error'] = 'Folder found but BIDS Toolbox history file not found'
-    else:
-        data['error'] = 'Folder not found'
-
-    js = json.dumps(data)
-    resp = Response(js, status=200, mimetype='application/json')
+    #DEBUG
+    print("Name of generated zipfile: ",resp_data['zipfile'])
  
     return resp
 
