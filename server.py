@@ -22,6 +22,8 @@ from dcm2bids import bidskit
 from scanModality import inferScanModality
 
 app = Flask(__name__)
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0 #Disable file caching
+
 config = {}
 
 @app.route('/createBids', methods = ['POST'])
@@ -489,7 +491,7 @@ def updateUploadHandler():
     make_archive('download/BIDS_'+dataset_name, 'zip', parent_folder+'/output')
 
     # Remove temporary working directory
-    rmtree(parent_folder)
+    #rmtree(parent_folder)
 
     end_time = timer()
 
