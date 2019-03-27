@@ -1,7 +1,6 @@
 from flask import Flask
 from flask import request
 from flask import send_from_directory
-from flask import send_file
 from flask import Response
 
 from shutil import copytree
@@ -14,12 +13,12 @@ from distutils.dir_util import copy_tree
 import os
 import json
 import time
-import zipfile
 
 from timeit import default_timer as timer
 
 from dcm2bids import bidskit
 from scanModality import inferScanModality
+from toolbox import *
 
 app = Flask(__name__)
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0 #Disable file caching
@@ -81,66 +80,12 @@ def createBidsHandler():
             except:
                 raise RuntimeError("BIDS Toolbox error -- Error trying to copy subject "+sub+" scan "+ses+" data in folder "+parent_folder+'/dicom/'+sub+'/'+ses)
 
-    ## Run bidskit 1st pass 
-    t = bidskit(parent_folder+'/dicom', parent_folder+'/output', data, config)
-    dcm2niix_time += t
-
-    ## Fill the bidskit configfile
-    with open(parent_folder+'/derivatives/conversion/Protocol_Translator.json', 'r') as f:
-        bidskit_config = json.load(f)
-
-    any_unclassified = False #This variable will be used to flag potential undetected scan types 
-    unclassified_list = []
-
-    #For each scan tag/key, first check if the scan modality/type was provided,
-    #if not, call the Toolbox heuristic to detect.
-    for key in bidskit_config:
-        found = False
-        if 'modalities' in data['metadata']:
-            for mod in data['metadata']['modalities']:
-                if mod['tag'] in key:
-                    bidskit_config[key][0] = mod['type']
-                    bidskit_config[key][1] = mod['modality']
-                    found = True
-                    break
-
-        if(found == False):
-            scan_type = inferScanModality(key, parent_folder)
-            if scan_type['modality'] == 'unclassified':
-                any_unclassified = True
-                unclassified_list.append(key)
-            else:
-                bidskit_config[key][0] = scan_type['type']
-                bidskit_config[key][1] = scan_type['modality']
-
-    #This if triggers is there has been any scan key with no user provided type/modality and 
-    #and for which the Toolbox heuristic has not been able to classify. This stops the conversion.
-    if any_unclassified:
-        resp_data['status'] = 'error'
-        resp_data['errorMessage'] = 'Scan modality not provided and not detected for the following tags: '
-        resp_data['errorMessage'] += str(unclassified_list)
-
+    ## Create BIDS dataset from DICOM files
+    error = createDataset(parent_folder, data, config, resp_data, dcm2niix_time)
+    if error == True:
         resp_js = json.dumps(resp_data)
         resp = Response(resp_js, status=200, mimetype='application/json')
-	 
-        return resp
-
-    with open(parent_folder+'/derivatives/conversion/Protocol_Translator.json', "w") as f:
-        json.dump(bidskit_config, f)
-
-    ## Run bidskit 2nd pass
-    t = bidskit(parent_folder+'/dicom', parent_folder+'/output', data, config)
-    dcm2niix_time += t
-
-    ## Add participants.json
-    copyfile('participants.json',  parent_folder+'/output/participants.json')
-
-    ## Store metadata for BIDS toolbox in hidden file
-    with open(parent_folder+'/output/.dataset.toolbox', "w") as f:
-        json.dump(data, f)
-
-    ## Add hidden ProtocolTranslator as hidden file to dataset 
-    copyfile(parent_folder+'/derivatives/conversion/Protocol_Translator.json', parent_folder+'/output/.Protocol_Translator.json')
+        return resp        
 
     ## Copy local BIDS folder to output directory
     copy_tree(parent_folder+'/output', data['output'])
@@ -190,9 +135,7 @@ def createUploadHandler():
         raise RuntimeError("BIDS Toolbox error -- Directory ",parent_folder, " already exists")
 
     ## Create and populate DICOM subfolder
-
     os.mkdir(parent_folder+'/dicom')
-    print('Copying all the stuff into: '+parent_folder)
     
     for f in request.files:
         #The file object is named 'file_X_Y_Z'
@@ -208,66 +151,12 @@ def createUploadHandler():
         filename = fobj.filename
         fobj.save(os.path.join(parent_folder+'/dicom/'+sub+'/'+ses ,filename)) 
 
-    ## Run bidskit 1st pass 
-    t = bidskit(parent_folder+'/dicom', parent_folder+'/output', data, config)
-    dcm2niix_time += t
-
-    ## Fill the bidskit configfile
-    with open(parent_folder+'/derivatives/conversion/Protocol_Translator.json', 'r') as f:
-        bidskit_config = json.load(f)
-
-    any_unclassified = False #This variable will be used to flag potential undetected scan types 
-    unclassified_list = []
-
-    #For each scan tag/key, first check if the scan modality/type was provided,
-    #if not, call the Toolbox heuristic to detect.
-    for key in bidskit_config:
-        found = False
-        if 'modalities' in data['metadata']:
-            for mod in data['metadata']['modalities']:
-                if mod['tag'] in key:
-                    bidskit_config[key][0] = mod['type']
-                    bidskit_config[key][1] = mod['modality']
-                    found = True
-                    break
-
-        if(found == False):
-            scan_type = inferScanModality(key, parent_folder)
-            if scan_type['modality'] == 'unclassified':
-                any_unclassified = True
-                unclassified_list.append(key)
-            else:
-                bidskit_config[key][0] = scan_type['type']
-                bidskit_config[key][1] = scan_type['modality']
-
-    #This if triggers is there has been any scan key with no user provided type/modality and 
-    #and for which the Toolbox heuristic has not been able to classify. This stops the conversion.
-    if any_unclassified:
-        resp_data['status'] = 'error'
-        resp_data['errorMessage'] = 'Scan modality not provided and not detected for the following tags: '
-        resp_data['errorMessage'] += str(unclassified_list)
-
+    ## Create BIDS dataset from DICOM files
+    error = createDataset(parent_folder, data, config, resp_data, dcm2niix_time)
+    if error == True:
         resp_js = json.dumps(resp_data)
         resp = Response(resp_js, status=200, mimetype='application/json')
-	 
-        return resp
-
-    with open(parent_folder+'/derivatives/conversion/Protocol_Translator.json', "w") as f:
-        json.dump(bidskit_config, f)
-
-    ## Run bidskit 2nd pass
-    t = bidskit(parent_folder+'/dicom', parent_folder+'/output', data, config)
-    dcm2niix_time += t
-
-    ## Add participants.json
-    copyfile('participants.json',  parent_folder+'/output/participants.json')
-
-    ## Store metadata for BIDS toolbox in hidden file
-    with open(parent_folder+'/output/.dataset.toolbox', "w") as f:
-        json.dump(data, f)
-
-    ## Add hidden ProtocolTranslator as hidden file to dataset 
-    copyfile(parent_folder+'/derivatives/conversion/Protocol_Translator.json', parent_folder+'/output/.Protocol_Translator.json')
+        return resp        
 
     #Zip output folder 
     dataset_name = ''
@@ -361,23 +250,8 @@ def updateBidsHandler():
                 except:
                     raise RuntimeError("BIDS Toolbox error -- Error trying to copy subject "+sub+" scan "+scan+" data in folder "+parent_folder+'/dicom/'+sub+'/'+scan)
     
-    ## Run bidskit 2nd pass
-    dcm2niix_time = bidskit(parent_folder+'/dicom', parent_folder+'/output', data, config)
-
-    # Check for existence and add new items to add to dataset_description
-    if len(data['metadata']['datasetDescription']) > 0:
-        with open(parent_folder+'/output/dataset_description.json', 'r') as f:
-            dataset_props = json.load(f)
-
-        for item in data['metadata']['datasetDescription']:
-            dataset_props[item] = data['metadata']['datasetDescription'][item]
-
-        with open(parent_folder+'/output/dataset_description.json', "w") as f:
-            json.dump(dataset_props, f)
-
-    ## Store metadata for BIDS toolbox in hidden file
-    with open(parent_folder+'/.dataset.toolbox', "w") as f:
-        json.dump(data, f)
+    ## Update dataset with new information 
+    updateDataset(parent_folder, data, config, dcm2niix_time)   
 
     ## Copy local BIDS folder to output directory
     copy_tree(parent_folder+'/output', data['output'])
@@ -405,6 +279,7 @@ def updateBidsHandler():
 def updateUploadHandler():
 
     start_time = timer()
+    dcm2niix_time = 0.0 
     resp_data = {} #Object to return status at the end of function
 
     ## Create temporary working folder 
@@ -413,8 +288,6 @@ def updateUploadHandler():
         os.mkdir(parent_folder)
     except FileExistsError:
         raise RuntimeError("BIDS Toolbox error -- Directory ",parent_folder, " already exists")
-
-    print("Now in parent folder: "+parent_folder)
 
     ## Get dataset from POST data and unzip
     fobj = request.files['dataset_zip']
@@ -460,25 +333,10 @@ def updateUploadHandler():
             filename = fobj.filename
             fobj.save(os.path.join(parent_folder+'/dicom/'+sub+'/'+ses ,filename)) 
     
-    ## Run bidskit 2nd pass
-    dcm2niix_time = bidskit(parent_folder+'/dicom', parent_folder+'/output', data, config)
+    ## Update dataset with new information 
+    updateDataset(parent_folder, data, config, dcm2niix_time)
 
-    # Check for existence and add new items to add to dataset_description
-    if len(data['metadata']['datasetDescription']) > 0:
-        with open(parent_folder+'/output/dataset_description.json', 'r') as f:
-            dataset_props = json.load(f)
-
-        for item in data['metadata']['datasetDescription']:
-            dataset_props[item] = data['metadata']['datasetDescription'][item]
-
-        with open(parent_folder+'/output/dataset_description.json', "w") as f:
-            json.dump(dataset_props, f)
-    
-    ## Store metadata for BIDS toolbox in hidden file
-    with open(parent_folder+'/.dataset.toolbox', "w") as f:
-        json.dump(data, f)
-
-    #Zip output folder 
+    # Zip output folder 
     dataset_name = ''
     if 'Name' in dataset_props:
         dataset_name = dataset_props['Name']
@@ -491,7 +349,7 @@ def updateUploadHandler():
     make_archive('download/BIDS_'+dataset_name, 'zip', parent_folder+'/output')
 
     # Remove temporary working directory
-    #rmtree(parent_folder)
+    rmtree(parent_folder)
 
     end_time = timer()
 
