@@ -15,6 +15,7 @@ RUN mkdir build
 WORKDIR /app/dcm2niix/build
 RUN cmake -DZLIB_IMPLEMENTATION=Cloudflare -DUSE_JPEGLS=ON -DUSE_OPENJPEG=ON /app/dcm2niix
 RUN make
+RUN ln -s /app/dcm2niix/build/bin/dcm2niix /usr/local/bin/dcm2niix 
 
 # Get BIDS Toolbox
 WORKDIR /app
