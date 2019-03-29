@@ -214,7 +214,7 @@
 		$("#waitCreationLabel").show();
 
 		$.ajax({
-			url:"/createUpload",
+			url:"/createBidsGUI",
 			type:"POST",
 			data:formdata,
             processData: false,
@@ -291,7 +291,7 @@
 		$("#waitUpdateLabel").show();
 
 		$.ajax({
-			url:"/updateUpload",
+			url:"/updateBidsGUI",
 			type:"POST",
 			data:formdata,
             processData:false,
@@ -316,43 +316,6 @@
 		})		
         });
 
-
-    /*        $("#uploadButton").click(function(){
-
-                formdata = new FormData();
-                
-                var i;
-                var len = $("#upload1").prop('files').length;
-
-                for(i = 0; i < len; i++){
-                    formdata.append("file_s1"+i, $("#upload1").prop('files')[i]);
-                }
-
-                len = $("#upload2").prop('files').length;
-
-                for(i = 0; i < len; i++){
-                    formdata.append("file_s2"+i, $("#upload2").prop('files')[i]);
-                }
-                    
-                var metadata = {}
-                metadata['LEL'] = 'True'
-                formdata.append("metadata_json",metadata)
-           
-                $.ajax({
-                    url:"/createUpload",
-                    type:"POST",
-                    data: formdata,
-                    processData: false,
-                    contentType: false,
-                    successs: function(result){
-                        alert("Success");
-                    },
-                	complete: function(data){
-                        alert("Complete");
-			        }
-                });
-            });
-*/
 
             $("#checkDatasetButton").click(function(){
 

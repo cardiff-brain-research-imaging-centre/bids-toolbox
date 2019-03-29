@@ -93,9 +93,6 @@ def createBidsHandler():
     ## Remove temporary working directory
     rmtree(parent_folder)
 
-    ## Call the processing pipeline
-    # To-Do, connect with SlurmD/pySlurm
-
     end_time = timer()
 
     print('createBIDS finished - dcm2niix time: '+str(round(dcm2niix_time,3))+' s, Total time: '+str(round(end_time - start_time,3))+' s')
@@ -108,8 +105,9 @@ def createBidsHandler():
  
     return resp
 
-@app.route('/createUpload', methods = ['POST'])
-def createUploadHandler():
+
+@app.route('/createBidsGUI', methods = ['POST'])
+def createBidsGUIHandler():
 
     start_time = timer()
     dcm2niix_time = 0.0
@@ -260,9 +258,6 @@ def updateBidsHandler():
     # Remove temporary working directory
     rmtree(parent_folder)
 
-    ## Call the processing pipeline
-    # To-Do, connect with SlurmD/pySlurm
-
     end_time = timer()
 
     print('updateBIDS finished - dcm2niix time: '+str(round(dcm2niix_time,3))+' s, Total time: '+str(round(end_time - start_time,3))+' s')
@@ -276,8 +271,8 @@ def updateBidsHandler():
     return resp
 
 
-@app.route('/updateUpload', methods = ['POST'])
-def updateUploadHandler():
+@app.route('/updateBidsGUI', methods = ['POST'])
+def updateBidsGUIHandler():
 
     start_time = timer()
     dcm2niix_time = 0.0 
