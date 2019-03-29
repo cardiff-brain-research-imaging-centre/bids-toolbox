@@ -6,3 +6,5 @@ Currently, this project is a prototype under development and not every feature h
 
 
 Please, see the [Wiki](https://github.com/ulopeznovoa/bids-toolbox/wiki) of this repository for information about installation and usage. 
+
+This work was done as part of the *Microstructural Imaging Data Centre (MIDaC)* project, funded by the Science and Technology Facilities Council (STFC) of the United Kingdom (grant number ST/S00209X/1).
