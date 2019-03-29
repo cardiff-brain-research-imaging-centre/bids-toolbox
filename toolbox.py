@@ -5,11 +5,10 @@ from shutil import copyfile
 from dcm2bids import bidskit
 from scanModality import inferScanModality
 
-def createDataset(parent_folder, data, config, resp_data, dcm2niix_time):
+def createDataset(parent_folder, data, config, resp_data):
 
     ## Run bidskit 1st pass 
-    t = bidskit(parent_folder+'/dicom', parent_folder+'/output', data, config)
-    dcm2niix_time += t
+    dcm2niix_time = bidskit(parent_folder+'/dicom', parent_folder+'/output', data, config)
 
     ## Fill the bidskit configfile
     with open(parent_folder+'/derivatives/conversion/Protocol_Translator.json', 'r') as f:
@@ -45,7 +44,7 @@ def createDataset(parent_folder, data, config, resp_data, dcm2niix_time):
         resp_data['status'] = 'error'
         resp_data['errorMessage'] = 'Scan modality not provided and not detected for the following tags: '
         resp_data['errorMessage'] += str(unclassified_list)
-        return True #Return True for error
+        return True, dcm2niix_time #Return True for error
 
     with open(parent_folder+'/derivatives/conversion/Protocol_Translator.json', "w") as f:
         json.dump(bidskit_config, f)
@@ -64,9 +63,9 @@ def createDataset(parent_folder, data, config, resp_data, dcm2niix_time):
     ## Add hidden ProtocolTranslator as hidden file to dataset 
     copyfile(parent_folder+'/derivatives/conversion/Protocol_Translator.json', parent_folder+'/output/.Protocol_Translator.json')
 
-    return False #Return False for no error
+    return False, dcm2niix_time #Return False for no error
 
-def updateDataset(parent_folder, data, config, dcm2niix_time):
+def updateDataset(parent_folder, data, config):
     ## Run bidskit 2nd pass
     dcm2niix_time = bidskit(parent_folder+'/dicom', parent_folder+'/output', data, config)
 
@@ -85,3 +84,4 @@ def updateDataset(parent_folder, data, config, dcm2niix_time):
     with open(parent_folder+'/.dataset.toolbox', "w") as f:
         json.dump(data, f)
 
+    return dcm2niix_time

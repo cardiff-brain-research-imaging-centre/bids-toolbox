@@ -81,7 +81,7 @@ def createBidsHandler():
                 raise RuntimeError("BIDS Toolbox error -- Error trying to copy subject "+sub+" scan "+ses+" data in folder "+parent_folder+'/dicom/'+sub+'/'+ses)
 
     ## Create BIDS dataset from DICOM files
-    error = createDataset(parent_folder, data, config, resp_data, dcm2niix_time)
+    error, dcm2niix_time = createDataset(parent_folder, data, config, resp_data)
     if error == True:
         resp_js = json.dumps(resp_data)
         resp = Response(resp_js, status=200, mimetype='application/json')
@@ -152,7 +152,7 @@ def createUploadHandler():
         fobj.save(os.path.join(parent_folder+'/dicom/'+sub+'/'+ses ,filename)) 
 
     ## Create BIDS dataset from DICOM files
-    error = createDataset(parent_folder, data, config, resp_data, dcm2niix_time)
+    error, dcm2niix_time = createDataset(parent_folder, data, config, resp_data)
     if error == True:
         resp_js = json.dumps(resp_data)
         resp = Response(resp_js, status=200, mimetype='application/json')
@@ -252,7 +252,7 @@ def updateBidsHandler():
                     raise RuntimeError("BIDS Toolbox error -- Error trying to copy subject "+sub+" scan "+scan+" data in folder "+parent_folder+'/dicom/'+sub+'/'+scan)
     
     ## Update dataset with new information 
-    updateDataset(parent_folder, data, config, dcm2niix_time)   
+    dcm2niix_time = updateDataset(parent_folder, data, config)   
 
     ## Copy local BIDS folder to output directory
     copy_tree(parent_folder+'/output', data['output'])
@@ -335,7 +335,7 @@ def updateUploadHandler():
             fobj.save(os.path.join(parent_folder+'/dicom/'+sub+'/'+ses ,filename)) 
     
     ## Update dataset with new information 
-    updateDataset(parent_folder, data, config, dcm2niix_time)
+    dcm2niix_time = updateDataset(parent_folder, data, config)
 
     # Zip output folder 
     dataset_name = ''
