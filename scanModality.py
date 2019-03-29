@@ -34,7 +34,7 @@ def inferScanModality(tag, parent_folder):
             if 'GR' in SS:
                 if TE < 30:
                     if FA == 90:
-                        if TR < 800:
+                        if TR < 900:
                             scan['type'] = 'anat'
                             scan['modality'] = 'T1w'                       
                         else:
