@@ -181,6 +181,7 @@ def createUploadHandler():
 def updateBidsHandler():
 
     start_time = timer()
+    dcm2niix_time = 0.0
     resp_data = {} #Object to return status at the end of function
 
     ## Read body message and check format
