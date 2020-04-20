@@ -6,6 +6,6 @@ Currently, this project is a prototype under development and not every feature h
 
 Please, see the [Wiki](https://github.com/ulopeznovoa/bids-toolbox/wiki) of this repository for information about installation and usage. 
 
-More information about The BIDS Toolbox can be found in this paper: [The BIDS Toolbox: A web Service to Manage Brain Imaging Datasets, Workshop on Data Preprocessing for Big Biomedical Data 2019](https://ieeexplore.ieee.org/document/9060259)
+More information about The BIDS Toolbox can be found in this paper: [The BIDS Toolbox: A web Service to Manage Brain Imaging Datasets](https://ieeexplore.ieee.org/document/9060259) of the [Workshop on Data Preprocessing for Big Biomedical Data 2019](https://www2.le.ac.uk/departments/informatics/people/yudong-zhang/workshop/dpbbd).
 
 This work was done as part of the *Microstructural Imaging Data Centre (MIDaC)* project, funded by the Science and Technology Facilities Council (STFC) of the United Kingdom (grant number ST/S00209X/1).
